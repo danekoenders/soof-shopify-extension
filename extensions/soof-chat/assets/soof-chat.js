@@ -173,34 +173,9 @@ class ChatBot extends HTMLElement {
             padding: 10px;
         }
     
-        .chat-log .assistant-loading {
-            font-style: italic;
-            color: #0070f3;
-            display: flex;
-            justify-content: center; /* Center the dots horizontally */
-        }
-        
-        .chat-log .assistant-loading span {
-            animation: fadeInOut 1.2s infinite;
-            opacity: 0; /* Start with an invisible state */
-        }
-        
-        @keyframes fadeInOut {
-            0%, 100% { opacity: 0; }
-            50% { opacity: 1; }
-        }
-        
-        /* Stagger the animation of each dot */
-        .chat-log .assistant-loading span:nth-child(1) {
-            animation-delay: 0s;
-        }
-        
-        .chat-log .assistant-loading span:nth-child(2) {
-            animation-delay: 0.4s;
-        }
-        
-        .chat-log .assistant-loading span:nth-child(3) {
-            animation-delay: 0.8s;
+        .chat-log .message.assistant-loading {
+          font-style: italic;
+          color: #0070f3;
         }
     
         .chat-input {
@@ -254,7 +229,6 @@ class ChatBot extends HTMLElement {
             if (!response.ok) throw new Error('Failed to fetch');
             this.chatbotData = await response.json();
             this.render(); // Render the component after data is fetched
-            this.renderMessages();
             this.addEventListeners(); // Attach event listeners after rendering
         } catch (error) {
             console.error('Fetch error:', error);
@@ -379,6 +353,11 @@ class ChatBot extends HTMLElement {
                 </div>
                 <button class="close-btn">×</button>
                 <div class="chat-log">
+                    ${this.messages.map((msg) => `
+                    <div class="message-wrapper ${msg.role}">
+                        <div class="message">${msg.content}</div>
+                    </div>
+                    `).join('')}
                     ${emailInputSection}
                 </div>
                 <div class="chat-input">
@@ -387,28 +366,6 @@ class ChatBot extends HTMLElement {
                 </div>
             </div>
         `;
-    }
-
-    renderMessages() {
-        const chatLog = this.shadowRoot.querySelector('.chat-log');
-        if (!chatLog) return;
-        
-        chatLog.innerHTML = this.messages
-            .map((msg) => {
-                if (msg.role === 'assistant-loading') {
-                    return `
-                    <div class="message-wrapper assistant-loading ${msg.role}">
-                        <div class="message"><span>.</span><span>.</span><span>.</span></div>
-                    </div>`;
-                }
-
-                return `
-                    <div class="message-wrapper ${msg.role}">
-                        <div class="message">${msg.content}</div>
-                    </div>
-                `;
-            })
-            .join('');
     }
 
     handleToggleChatClick(event) {
