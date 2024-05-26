@@ -18,6 +18,7 @@ class ChatBot extends HTMLElement {
         this.messages = [];
         this.loadingTimeout = null;
         this.apiPending = false;
+        this.userEmail = null; // Variable to store user email
         this.chatbotData = null; // Variable to store fetched data
     }
 
@@ -30,9 +31,37 @@ class ChatBot extends HTMLElement {
           right: 25px; /* Adjust the distance from the right */
           z-index: 9999; /* Ensure the chat bot appears above other content */
         }
+
+        .chat-window {
+            display: ${this.isOpen ? 'flex' : 'none'};
+            width: 450px;
+            height: 750px;
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            flex-direction: column; /* Stack children vertically */
+            font-size 16px;
+            line-height: 20px;
+        }
     
         .icon {
           fill: white;
+        }
+
+        svg {
+            fill: white;
+        }
+
+        input {
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 0.9em;
+            width: 180px;
         }
     
         button {
@@ -69,36 +98,117 @@ class ChatBot extends HTMLElement {
         .close-btn:hover {
           background-color: #aaa;
         }
-    
-        .chat-log {
-          flex-grow: 1; /* Allow chat-log to take up available space */
-          overflow-y: auto; /* Enable vertical scrolling */
-          padding: 10px;
-          border-bottom: 1px solid #ccc;
-        }
-    
-        .chat-log .message {
-          margin-bottom: 10px;
+
+        .chat-header {
+            background: linear-gradient(to right, ${this.chatbotData.primaryColor || '#0070f3'}, ${this.chatbotData.secondaryColor || '#00e676'});
+            color: white;
+            padding: 10px 20px;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+            font-size: 1.2em;
         }
 
-        .chat-log .message.user {
-          color: black;
+        .chat-header h4 {
+            margin: 0;
         }
-        .chat-log .message.assistant {
-          color: #0070f3;
+
+        .chat-header span {
+            font-size: 0.8em;
         }
     
-        .chat-log .message.assistant-loading {
-          font-style: italic;
-          color: #0070f3;
+        .chat-log {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; /* Allow chat-log to take up available space */
+            overflow-y: auto; /* Enable vertical scrolling */
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+    
+        .chat-log .message-wrapper {
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .chat-log .user {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .chat-log .user .message {
+            padding: 12px;
+            border-radius: 20px 20px 1px;
+            background: #dcdcdc;
+            color: #000;
+            width: fit-content;
+        }
+
+        .chat-log .assistant {
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .chat-log .assistant .message {
+            padding: 12px;
+            color: #1e1e1e;
+            border-radius: 20px 20px 20px 1px;
+            border: 2px solid #6d6d6d;
+            background: rgb(255, 255, 255);
+            width: fit-content;
+        }
+
+        .chat-log .assistant.email-input .message {
+            padding: 5px 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .chat-log .assistant.email-input button {
+            width: 42px;
+            height: 42px;
+            padding: 10px;
+        }
+    
+        .chat-log .assistant-loading {
+            font-style: italic;
+            color: #0070f3;
+            display: flex;
+            justify-content: center; /* Center the dots horizontally */
+        }
+        
+        .chat-log .assistant-loading span {
+            animation: fadeInOut 1.2s infinite;
+            opacity: 0; /* Start with an invisible state */
+        }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+        
+        /* Stagger the animation of each dot */
+        .chat-log .assistant-loading span:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .chat-log .assistant-loading span:nth-child(2) {
+            animation-delay: 0.4s;
+        }
+        
+        .chat-log .assistant-loading span:nth-child(3) {
+            animation-delay: 0.8s;
         }
     
         .chat-input {
           display: flex;
           padding: 5px; /* Reduced padding */
           background-color: #f7f7f7; /* Optional: Different background for clarity */
-          border-bottom-left-radius:8px;
-          border-bottom-right-radius:8px;
+          border-bottom-left-radius: 15px;
+          border-bottom-right-radius: 15px;
         }
     
         .chat-input input {
@@ -134,39 +244,31 @@ class ChatBot extends HTMLElement {
         .send-btn:hover {
           background-color: #0051bb; /* Darker shade on hover */
         }
-    
-        .chat-window {
-          display: ${this.isOpen ? 'flex' : 'none'};
-          width: 300px;
-          height: 400px;
-          position: absolute;
-          bottom: 80px;
-          right: 0%;
-          /* background-color: #fff; */
-          background-color: #fff;
-          border: 1px solid #ccc;
-          border-radius: 8px;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-          flex-direction: column; /* Stack children vertically */
-        }
-    
+
         `;
     }
 
     async fetchChatbotData() {
         try {
-            const response = await fetch('https://soof-app--ft-webcomponent.gadget.app/serve'); // Replace 'YOUR_URL_HERE' with the actual URL
+            const response = await fetch('https://soof-app--development.gadget.app/serve');
             if (!response.ok) throw new Error('Failed to fetch');
             this.chatbotData = await response.json();
             this.render(); // Render the component after data is fetched
+            this.renderMessages();
             this.addEventListeners(); // Attach event listeners after rendering
         } catch (error) {
             console.error('Fetch error:', error);
         }
     }
 
-    connectedCallback() {
-        this.fetchChatbotData(); // Fetch data when component is attached to the DOM
+    async connectedCallback() {
+        await this.fetchChatbotData(); // Fetch data when component is attached to the DOM
+        this.messages.push({
+            role: 'assistant',
+            content: 'Welkom! Vul hieronder je e-mailadres in om een chat te beginnen.',
+        });
+        this.render();
+        this.addEventListeners();
     }
 
     disconnectedCallback() {
@@ -256,20 +358,57 @@ class ChatBot extends HTMLElement {
     }
 
     render() {
+        const emailInputSection = this.userEmail ? '' : `
+            <div class="message-wrapper assistant email-input">
+                <div class="message">
+                    <input type="email" name="email" autocomplete="email" placeholder="E-mailadres">
+                    <button>
+                        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 500 500"><g><g><polygon points="0,497.25 535.5,267.75 0,38.25 0,216.75 382.5,267.75 0,318.75"></polygon></g></g></svg>
+                    </button>
+                </div>
+            </div>
+        `;
+
         this.shadowRoot.innerHTML = `
-          <style>${this.styles}</style>
+            <style>${this.styles}</style>
             <button class="toggle-chat-btn">${this.isOpen ? closeIcon : chatIcon}</button>
             <div class="chat-window">
-              <button class="close-btn">×</button>
-              <div class="chat-log">
-                ${this.messages.map((msg) => `<div class="message ${msg.role}">${msg.content}</div>`).join('')}
-              </div>
-              <div class="chat-input">
-                <input type="text" placeholder="Type a message...">
-                <button class="send-btn" ${this.apiPending ? 'disabled' : ''}>Send</button>
-              </div>
+                <div class="chat-header">
+                    <h4>${this.chatbotData?.shop.customName || "Klantenservice"}</h4>
+                    <span>Je chat met ${this.chatbotData?.customName || "Soof"}</span>
+                </div>
+                <button class="close-btn">×</button>
+                <div class="chat-log">
+                    ${emailInputSection}
+                </div>
+                <div class="chat-input">
+                    <input type="text" placeholder="Stel je vraag...">
+                    <button class="send-btn" ${this.apiPending ? 'disabled' : ''}>Send</button>
+                </div>
             </div>
-          `;
+        `;
+    }
+
+    renderMessages() {
+        const chatLog = this.shadowRoot.querySelector('.chat-log');
+        if (!chatLog) return;
+        
+        chatLog.innerHTML = this.messages
+            .map((msg) => {
+                if (msg.role === 'assistant-loading') {
+                    return `
+                    <div class="message-wrapper assistant-loading ${msg.role}">
+                        <div class="message"><span>.</span><span>.</span><span>.</span></div>
+                    </div>`;
+                }
+
+                return `
+                    <div class="message-wrapper ${msg.role}">
+                        <div class="message">${msg.content}</div>
+                    </div>
+                `;
+            })
+            .join('');
     }
 
     handleToggleChatClick(event) {
@@ -298,6 +437,48 @@ class ChatBot extends HTMLElement {
         }
     }
 
+    handleEmailSendButtonClick() {
+        const emailInputField = this.shadowRoot.querySelector('.email-input input[type="email"]');
+        if (emailInputField.value.trim()) {
+            this.startChat(emailInputField.value.trim());
+            emailInputField.value = ''; // Clear the input after sending
+        }
+    }
+
+    async startChat(email) {
+        try {
+            const response = await fetch('https://soof-app--development.gadget.app/chatToken', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to submit email');
+            }
+
+            const data = await response.json();
+            this.chatbotData.userEmail = email; // Store email locally or in fetched data
+            if (data.token) {
+                document.cookie = `soofChatToken=${data.token}; path=/; max-age=3600`;
+            }
+            this.messages.push({
+                role: 'assistant',
+                content: 'Email submitted successfully. You can now start chatting.',
+            });
+        } catch (error) {
+            console.error('There was a problem with the fetch operation:', error);
+            this.messages.push({
+                role: 'assistant',
+                content: 'Failed to submit email.',
+            });
+        }
+
+        this.render();
+    }
+
     clearAndFocusInput(inputField) {
         inputField.value = '';
         inputField.focus();
@@ -313,14 +494,14 @@ class ChatBot extends HTMLElement {
     }
 
     addEventListeners() {
-        this.shadowRoot
-            .querySelector('.toggle-chat-btn')
-            .addEventListener('click', this.handleToggleChatClick.bind(this));
+        this.shadowRoot.querySelector('.toggle-chat-btn').addEventListener('click', this.handleToggleChatClick.bind(this));
         this.shadowRoot.querySelector('.close-btn').addEventListener('click', this.handleCloseButtonClick.bind(this));
         this.shadowRoot.querySelector('.send-btn').addEventListener('click', this.handleSendButtonClick.bind(this));
-        this.shadowRoot
-            .querySelector('.chat-input input')
-            .addEventListener('keydown', this.handleInputKeydown.bind(this));
+        this.shadowRoot.querySelector('.chat-input input').addEventListener('keydown', this.handleInputKeydown.bind(this));
+        const emailSendButton = this.shadowRoot.querySelector('.email-send-btn');
+        if (emailSendButton) {
+            emailSendButton.addEventListener('click', this.handleEmailSendButtonClick.bind(this));
+        }
     }
 }
 
