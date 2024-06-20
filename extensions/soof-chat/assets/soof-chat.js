@@ -1,23 +1,3 @@
-const chatIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon">
-    <path d="M2 15V5c0-1.1.9-2 2-2h16a2 2 0 0 1 2 2v15a1 1 0 0 1-1.7.7L16.58 17H4a2 2 0 0 1-2-2z"/>
-    <path  d="M6 7h12a1 1 0 0 1 0 2H6a1 1 0 1 1 0-2zm0 4h8a1 1 0 0 1 0 2H6a1 1 0 0 1 0-2z"/>
-    </svg>
-    `;
-
-const closeIcon = `
-    <svg xmlns="http://www.w3.org/2000/svg" style="display: block; margin: auto; transform: scale(1.5, 1.5);" viewBox="0 0 24 24" class="icon">
-      <path transform="translate(0.5,0)" fill-rule="evenodd" d="M15.78 14.36a1 1 0 0 1-1.42 1.42l-2.82-2.83-2.83 2.83a1 1 0 1 1-1.42-1.42l2.83-2.82L7.3 8.7a1 1 0 0 1 1.42-1.42l2.83 2.83 2.82-2.83a1 1 0 0 1 1.42 1.42l-2.83 2.83 2.83 2.82z"/>
-    </svg>
-    `;
-
-const loaderIcon = `
-    <div class="loader"></div>
-    `;
-
-const sendButtonIcon = `
-    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 500 500"><g><g><polygon points="0,497.25 535.5,267.75 0,38.25 0,216.75 382.5,267.75 0,318.75"></polygon></g></g></svg>
-    `;
-
 class ChatBot extends HTMLElement {
     constructor() {
         super();
@@ -29,6 +9,11 @@ class ChatBot extends HTMLElement {
         this.chatStarted = false;
         this.chatbotData = null;
         this.chatSession = this.getCookie('soofChatSession');
+
+        this.chatIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon"><path d="M2 15V5c0-1.1.9-2 2-2h16a2 2 0 0 1 2 2v15a1 1 0 0 1-1.7.7L16.58 17H4a2 2 0 0 1-2-2z"/><path  d="M6 7h12a1 1 0 0 1 0 2H6a1 1 0 1 1 0-2zm0 4h8a1 1 0 0 1 0 2H6a1 1 0 0 1 0-2z"/></svg>`;
+        this.closeIcon = `<svg xmlns="http://www.w3.org/2000/svg" style="display: block; margin: auto; transform: scale(1.5, 1.5);" viewBox="0 0 24 24" class="icon"><path transform="translate(0.5,0)" fill-rule="evenodd" d="M15.78 14.36a1 1 0 0 1-1.42 1.42l-2.82-2.83-2.83 2.83a1 1 0 1 1-1.42-1.42l2.83-2.82L7.3 8.7a1 1 0 0 1 1.42-1.42l2.83 2.83 2.82-2.83a1 1 0 0 1 1.42 1.42l-2.83 2.83 2.83 2.82z"/></svg>`;
+        this.loaderIcon = `<div class="loader"></div>`;
+        this.sendButtonIcon = `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 500 500"><g><g><polygon points="0,497.25 535.5,267.75 0,38.25 0,216.75 382.5,267.75 0,318.75"></polygon></g></g></svg>`;
     }
 
     get styles() {
@@ -265,7 +250,7 @@ class ChatBot extends HTMLElement {
                     const emailInputSection = `
                     <div class="email-input">
                         <input type="email" name="email" autocomplete="email" placeholder="E-mailadres">
-                        <button id="email-send-btn">${sendButtonIcon}</button>
+                        <button id="email-send-btn">${this.sendButtonIcon}</button>
                     </div>
                     `;
 
@@ -321,7 +306,7 @@ class ChatBot extends HTMLElement {
     async startChat(email) {
         try {
             const emailSendButton = this.shadowRoot.getElementById('email-send-btn');
-            emailSendButton.innerHTML = loaderIcon;
+            emailSendButton.innerHTML = this.loaderIcon;
 
             const response = await fetch('https://soof-app--development.gadget.app/chatToken', {
                 method: 'POST',
@@ -332,7 +317,7 @@ class ChatBot extends HTMLElement {
             });
 
             if (!response.ok) {
-                emailSendButton.innerHTML = sendButtonIcon;
+                emailSendButton.innerHTML = this.sendButtonIcon;
                 throw new Error('Failed to submit email');
             }
 
@@ -365,7 +350,7 @@ class ChatBot extends HTMLElement {
     renderBase() {
         this.shadowRoot.innerHTML = `
             <style>${this.styles}</style>
-            <button class="toggle-chat-btn">${this.isOpen ? closeIcon : chatIcon}</button>
+            <button class="toggle-chat-btn">${this.isOpen ? this.closeIcon : this.chatIcon}</button>
             <div class="chat-window">
                 <div class="chat-header">
                     <h4>${this.chatbotData?.shop.customName || "Klantenservice"}</h4>
@@ -374,7 +359,7 @@ class ChatBot extends HTMLElement {
                 <div class="chat-log"></div>
                 <div class="chat-input">
                     <input name="question" type="text" placeholder="Stel je vraag...">
-                    <button class="send-btn" ${this.responsePending ? 'disabled' : ''}>${sendButtonIcon}</button>
+                    <button class="send-btn" ${this.responsePending ? 'disabled' : ''}>${this.sendButtonIcon}</button>
                 </div>
             </div>
         `;
