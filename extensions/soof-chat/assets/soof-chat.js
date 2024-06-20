@@ -237,6 +237,10 @@ class ChatBot extends HTMLElement {
             if (this.chatbotData.transcript) {
                 this.chatStarted = true;
                 const transcriptData = JSON.parse(this.chatbotData.transcript);
+                this.messages.push({
+                    role: 'assistant',
+                    content: `Welkom bij de chat! Ik ben ${this.chatbotData?.customName || "Soof"}, de virtuele assistent🤖 van deze webwinkel. Ik ben in staat de meesten vragen voor je te beantwoorden, stel gerust je eerste vraag of kies één van de suggesties hieronder!`,
+                });
 
                 for (const message of transcriptData) {
                     if (message.role === 'user') {
@@ -338,17 +342,10 @@ class ChatBot extends HTMLElement {
                 this.chatSession = data.token;
 
                 this.messages = [];
-                if (this.chatbotData?.name) {
-                    this.messages.push({
-                        role: 'assistant',
-                        content: `Welkom bij de chat! Ik ben ${this.chatbotData?.name}, de virtuele assistent🤖 van deze webwinkel. Ik ben in staat de meesten vragen voor je te beantwoorden, stel gerust je eerste vraag of kies één van de suggesties hieronder!`,
-                    });
-                } else {
-                    this.messages.push({
-                        role: 'assistant',
-                        content: `Welkom bij de chat! Ik ben Soof, de virtuele assistent🤖 van deze webwinkel. Ik ben in staat de meesten vragen voor je te beantwoorden, stel gerust je eerste vraag of kies één van de suggesties hieronder!`,
-                    });
-                }
+                this.messages.push({
+                    role: 'assistant',
+                    content: `Welkom bij de chat! Ik ben ${this.chatbotData?.customName || "Soof"}, de virtuele assistent🤖 van deze webwinkel. Ik ben in staat de meesten vragen voor je te beantwoorden, stel gerust je eerste vraag of kies één van de suggesties hieronder!`,
+                });
 
                 this.responsePending = false; // API call starts
                 this.updateSendButtonState();
