@@ -389,6 +389,7 @@ class ChatBot extends HTMLElement {
         this.updateSendButtonState();
 
         this.messages.push({ role: 'user', content: message });
+        const loadingMessageIndex = this.messages.length;
         this.messages.push({ role: 'assistant-loading', content: '...' });
         this.renderMessages();
 
@@ -426,7 +427,10 @@ class ChatBot extends HTMLElement {
             });
         }
 
+        //remove laoding message
+        this.messages.splice(loadingMessageIndex, 1)
         this.responsePending = false;
+        this.updateSendButtonState();
         this.renderMessages();
 
         // Return focus to the input field
