@@ -122,17 +122,20 @@ class ChatBot extends HTMLElement {
             width: 100%;
         }
 
+        .chat-log .message {
+            padding: 12px;
+            width: fit-content;
+        }
+
         .chat-log .user {
             display: flex;
             justify-content: flex-end;
         }
 
         .chat-log .user .message {
-            padding: 12px;
             border-radius: 20px 20px 1px;
             background: #dcdcdc;
             color: #000;
-            width: fit-content;
         }
 
         .chat-log .assistant {
@@ -141,12 +144,24 @@ class ChatBot extends HTMLElement {
         }
 
         .chat-log .assistant .message {
-            padding: 12px;
             color: #1e1e1e;
             border-radius: 20px 20px 20px 1px;
             border: 2px solid #6d6d6d;
             background: rgb(255, 255, 255);
-            width: fit-content;
+        }
+
+        .chat-log .assistant-loading .message {
+            color: black;
+            border-radius: 20px 20px 20px 1px;
+            border: 2px solid #6d6d6d;
+            background: rgb(255, 255, 255);
+        }
+
+        .chat-log .assistant-error .message {
+            color: #1e1e1e;
+            border-radius: 20px 20px 20px 1px;
+            border: 2px solid red;
+            background: rgb(255, 255, 255);
         }
 
         .chat-log .email-input {
@@ -159,16 +174,6 @@ class ChatBot extends HTMLElement {
             width: 42px;
             height: 42px;
             padding: 10px;
-        }
-    
-        .chat-log .assistant-loading {
-          font-style: italic;
-          border-color: #0070f3;
-        }
-
-        .chat-log .assistant-error .message {
-            font-style: italic;
-            border-color: #ff0000;
         }
     
         .chat-input {
@@ -318,7 +323,7 @@ class ChatBot extends HTMLElement {
 
             if (!response.ok) {
                 emailSendButton.innerHTML = this.sendButtonIcon;
-                throw new Error('Failed to submit email');
+                throw new Error('Invalid email address. Please try again.');
             }
 
             const data = await response.json();
@@ -339,7 +344,7 @@ class ChatBot extends HTMLElement {
         } catch (error) {
             console.error('There was a problem with the fetch operation:', error);
             this.messages.push({
-                role: 'assistant',
+                role: 'assistant-error',
                 content: 'Failed to submit email.',
             });
         }
