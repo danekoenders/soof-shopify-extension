@@ -24,11 +24,11 @@ class ChatBot extends HTMLElement {
         this.attachShadow({ mode: 'open' });
         this.isOpen = false;
         this.messages = [];
-        this.loadingTimeout = null;
-        this.responsePending = false;
+        this.responsePending = true;
         this.userEmail = null;
         this.chatStarted = false;
         this.chatbotData = null;
+        this.chatSession = this.getCookie('soofChatSession');
     }
 
     get styles() {
@@ -92,7 +92,7 @@ class ChatBot extends HTMLElement {
           height: 60px;
           padding: 10px;
           background-color: ${this.chatbotData.primaryColor || '#0070f3'};
-          border-radius: 10px;
+          border-radius: 50%;
           color: white;
           border: none;
           cursor: pointer;
@@ -176,9 +176,14 @@ class ChatBot extends HTMLElement {
             padding: 10px;
         }
     
-        .chat-log .message.assistant-loading {
+        .chat-log .assistant-loading {
           font-style: italic;
-          color: #0070f3;
+          border-color: #0070f3;
+        }
+
+        .chat-log .assistant-error .message {
+            font-style: italic;
+            border-color: #ff0000;
         }
     
         .chat-input {
@@ -207,7 +212,7 @@ class ChatBot extends HTMLElement {
           padding: 5px 15px; /* Adjusted padding for better appearance */
           color: white;
           border: none;
-          border-radius: 5px;
+          border-radius: 15px;
           cursor: pointer;
           transition: background-color 0.3s;
           font-size: 14px; /* Consistent with the input field */
@@ -228,23 +233,43 @@ class ChatBot extends HTMLElement {
     async connectedCallback() {
         try {
             await this.fetchChatbotData();
-            this.messages.push({
-                role: 'assistant',
-                content: `Welkom bij ${this.chatbotData?.shop.customName || "onze winkel"}! Vul hieronder je e-mailadres in om een chat te beginnen.`,
-            });
 
-            if (!this.chatStarted) {
-                const emailInputSection = `
-                <div class="email-input">
-                    <input type="email" name="email" autocomplete="email" placeholder="E-mailadres">
-                    <button id="email-send-btn">${sendButtonIcon}</button>
-                </div>
-                `;
+            if (this.chatbotData.transcript) {
+                this.chatStarted = true;
+                const transcriptData = JSON.parse(this.chatbotData.transcript);
 
+                for (const message of transcriptData) {
+                    if (message.role === 'user') {
+                        this.messages.push({
+                            role: message.role,
+                            content: message.message,
+                        });
+                    } else if (message.role === 'assistant') {
+                        this.messages.push({
+                            role: message.role,
+                            content: message.message.reply,
+                        });
+                    }
+                }
+            } else {
                 this.messages.push({
                     role: 'assistant',
-                    content: emailInputSection,
+                    content: `Welkom bij ${this.chatbotData?.shop.customName || "onze winkel"}! Vul hieronder je e-mailadres in om een chat te beginnen.`,
                 });
+
+                if (!this.chatStarted) {
+                    const emailInputSection = `
+                    <div class="email-input">
+                        <input type="email" name="email" autocomplete="email" placeholder="E-mailadres">
+                        <button id="email-send-btn">${sendButtonIcon}</button>
+                    </div>
+                    `;
+
+                    this.messages.push({
+                        role: 'assistant',
+                        content: emailInputSection,
+                    });
+                }
             }
 
             this.renderBase();
@@ -262,11 +287,30 @@ class ChatBot extends HTMLElement {
 
     async fetchChatbotData() {
         try {
-            const response = await fetch('https://soof-app--development.gadget.app/serve');
+            const response = await fetch('https://soof-app--development.gadget.app/serve', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sessionToken: this.chatSession,
+                }),
+            });
+
             if (!response.ok) throw new Error('Failed to fetch');
             this.chatbotData = await response.json();
         } catch (error) {
             console.error('Fetch error:', error);
+        }
+    }
+
+    getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) {
+            return parts.pop().split(';').shift();
+        } else {
+            return null;
         }
     }
 
@@ -290,7 +334,8 @@ class ChatBot extends HTMLElement {
 
             const data = await response.json();
             if (data.token) {
-                document.cookie = `soofChatToken = ${ data.token }; path = /; max-age=3600`;
+                document.cookie = `soofChatSession = ${data.token}; path = /; max-age=3600`;
+                this.chatSession = data.token;
 
                 this.messages = [];
                 if (this.chatbotData?.name) {
@@ -305,6 +350,8 @@ class ChatBot extends HTMLElement {
                     });
                 }
 
+                this.responsePending = false; // API call starts
+                this.updateSendButtonState();
                 this.chatStarted = true;
             }
         } catch (error) {
@@ -356,72 +403,55 @@ class ChatBot extends HTMLElement {
     }
 
     async sendMessage(message) {
-        this.messages.push({ role: 'user', content: message });
-        this.renderMessages();
-
-        // Add a "loading..." message
-        const loadingMessage = {
-            role: 'assistant-loading',
-            content: '...',
-        };
-        this.messages.push(loadingMessage);
-        this.renderMessages();
-
         this.responsePending = true; // API call starts
         this.updateSendButtonState();
 
+        this.messages.push({ role: 'user', content: message });
+        this.messages.push({ role: 'assistant-loading', content: '...' });
+        this.renderMessages();
+
         // Scroll to the newest message
         const chatLog = this.shadowRoot.querySelector('.chat-log');
-        if (chatLog) {
-            chatLog.scrollTop = chatLog.scrollHeight;
+        chatLog.scrollTop = chatLog.scrollHeight;
+
+        try {
+            const response = await fetch('https://soof-app--development.gadget.app/api/assistant/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sessionToken: this.chatSession,
+                    message: message,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+
+            this.messages.push({
+                role: 'assistant',
+                content: data.reply,
+            });
+        } catch (error) {
+            console.error('There was a problem with the fetch operation:', error);
+            this.messages.push({
+                role: 'assistant-error',
+                content: 'Sorry, there was an error processing your message. Please try again later.',
+            });
         }
 
-        this.loadingTimeout = setTimeout(async () => {
-            // Remove the "loading..." message
-            this.messages = this.messages.filter((msg) => msg !== loadingMessage);
+        this.responsePending = false;
+        this.renderMessages();
 
-            try {
-                const response = await fetch('http://localhost:3000/api/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ messages: this.messages.slice(-10) }), // Assuming the server expects a JSON payload with a "message" key
-                });
-
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
-                const data = await response.json();
-
-                // Assuming the server returns a JSON object with a "content" key for the bot's reply
-                this.messages.push({
-                    role: 'assistant',
-                    content: data.content || "Sorry, I didn't understand that.",
-                });
-            } catch (error) {
-                console.error('There was a problem with the fetch operation:', error);
-                this.messages.push({
-                    role: 'assistant',
-                    content: 'Sorry, there was an error processing your message.',
-                });
-            }
-
-            this.responsePending = false;
-            this.renderMessages();
-
-            // Return focus to the input field
-            const inputField = this.shadowRoot.querySelector('.chat-input input');
-            if (inputField) {
-                inputField.focus();
-            }
-            // Scroll to the newest message
-            const chatLog = this.shadowRoot.querySelector('.chat-log');
-            if (chatLog) {
-                chatLog.scrollTop = chatLog.scrollHeight;
-            }
-        }, 10000); // Display "loading..." for at least 10 seconds
+        // Return focus to the input field
+        const inputField = this.shadowRoot.querySelector('.chat-input input');
+        inputField.focus();
+        // Scroll to the newest message
+        chatLog.scrollTop = chatLog.scrollHeight;
     }
 
     handleToggleChatClick(event) {
