@@ -3,6 +3,7 @@ class ChatBot extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open' });
         this.isOpen = false;
+        this.scriptsLoaded = false;
         this.messages = [];
         this.responsePending = true;
         this.userEmail = null;
@@ -13,6 +14,7 @@ class ChatBot extends HTMLElement {
         this.chatIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon"><path d="M2 15V5c0-1.1.9-2 2-2h16a2 2 0 0 1 2 2v15a1 1 0 0 1-1.7.7L16.58 17H4a2 2 0 0 1-2-2z"/><path  d="M6 7h12a1 1 0 0 1 0 2H6a1 1 0 1 1 0-2zm0 4h8a1 1 0 0 1 0 2H6a1 1 0 0 1 0-2z"/></svg>`;
         this.closeIcon = `<svg xmlns="http://www.w3.org/2000/svg" style="display: block; margin: auto; transform: scale(1.5, 1.5);" viewBox="0 0 24 24" class="icon"><path transform="translate(0.5,0)" fill-rule="evenodd" d="M15.78 14.36a1 1 0 0 1-1.42 1.42l-2.82-2.83-2.83 2.83a1 1 0 1 1-1.42-1.42l2.83-2.82L7.3 8.7a1 1 0 0 1 1.42-1.42l2.83 2.83 2.82-2.83a1 1 0 0 1 1.42 1.42l-2.83 2.83 2.83 2.82z"/></svg>`;
         this.loaderIcon = `<div class="loader"></div>`;
+        this.typingIndicator = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
         this.sendButtonIcon = `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 500 500"><g><g><polygon points="0,497.25 535.5,267.75 0,38.25 0,216.75 382.5,267.75 0,318.75"></polygon></g></g></svg>`;
     }
 
@@ -118,8 +120,31 @@ class ChatBot extends HTMLElement {
         }
     
         .chat-log .message-wrapper {
+            display: flex;
+            flex-direction: column;
             margin-bottom: 10px;
             width: 100%;
+        }
+
+        .chat-log .message-wrapper .options {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            margin-top: 5px;
+            gap: 5px;
+        }
+
+        .chat-log .message-wrapper .options button {
+            width: fit-content;
+            height: 24px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 0;
+            background: rgb(54, 54, 54);
+            color: white;
+            font-size: 0.7em;
+            cursor: pointer;
         }
 
         .chat-log .message {
@@ -127,9 +152,53 @@ class ChatBot extends HTMLElement {
             width: fit-content;
         }
 
+        .chat-log .message p {
+            margin: 0;
+            margin-bottom: 6px;
+            font-size: 1em;
+            line-height: 1.4;
+            color: #333;
+        }
+
+
+        .chat-log .message h1,
+        .chat-log .message h2,
+        .chat-log .message h3,
+        .chat-log .message h4,
+        .chat-log .message h5,
+        .chat-log .message h6 {
+            margin: 0;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .chat-log .message h4,
+        .chat-log .message h5,
+        .chat-log .message h6 {
+            margin-top: 10px;
+        }
+
+        .chat-log .message ul, ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .chat-log .message li {
+            margin-bottom: 6px;
+            font-size: 0.97em;
+        }
+
+        .chat-log .message a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .chat-log .message a:hover {
+            text-decoration: underline;
+        }
+
         .chat-log .user {
-            display: flex;
-            justify-content: flex-end;
+            align-items: flex-end;
         }
 
         .chat-log .user .message {
@@ -139,8 +208,7 @@ class ChatBot extends HTMLElement {
         }
 
         .chat-log .assistant {
-            display: flex;
-            justify-content: flex-start;
+            align-items: flex-start;
         }
 
         .chat-log .assistant .message {
@@ -155,6 +223,47 @@ class ChatBot extends HTMLElement {
             border-radius: 20px 20px 20px 1px;
             border: 2px solid #6d6d6d;
             background: rgb(255, 255, 255);
+        }
+
+        .chat-log .assistant-loading .typing-indicator {
+            display: flex;
+            align-items: center;
+            height: 12px;
+            margin-left: 6px;
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            margin: 0 2px;
+            background: #ccc;
+            border-radius: 50%;
+            animation: blink 1.4s infinite both;
+        }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.4s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes blink {
+            0% {
+                opacity: 0.2;
+            }
+            20% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0.2;
+            }
         }
 
         .chat-log .assistant-error .message {
@@ -229,38 +338,42 @@ class ChatBot extends HTMLElement {
                 const transcriptData = JSON.parse(this.chatbotData.transcript);
                 this.messages.push({
                     role: 'assistant',
-                    content: `Welkom bij de chat! Ik ben ${this.chatbotData?.customName || "Soof"}, de virtuele assistent🤖 van deze webwinkel. Ik ben in staat de meesten vragen voor je te beantwoorden, stel gerust je eerste vraag of kies één van de suggesties hieronder!`,
+                    type: 'normal',
+                    content: `Welkom bij de chat! Ik ben ${this.chatbotData?.customName || "Soof"}, de virtuele assistent🤖 van deze webwinkel. Ik ben in staat de meesten vragen voor je te beantwoorden, stel gerust je eerste vraag!`,
                 });
 
                 for (const message of transcriptData) {
                     if (message.role === 'user') {
                         this.messages.push({
                             role: message.role,
+                            type: 'normal',
                             content: message.message,
                         });
                     } else if (message.role === 'assistant') {
                         this.messages.push({
                             role: message.role,
+                            type: 'normal',
                             content: message.message.reply,
                         });
                     }
                 }
             } else {
-                this.messages.push({
-                    role: 'assistant',
-                    content: `Welkom bij ${this.chatbotData?.shop.customName || "onze winkel"}! Vul hieronder je e-mailadres in om een chat te beginnen.`,
-                });
-
                 if (!this.chatStarted) {
+                    this.messages.push({
+                        role: 'assistant',
+                        type: 'normal',
+                        content: `Welkom bij ${this.chatbotData?.shop.customName || "onze winkel"}! Vul hieronder je e-mailadres in om een chat te beginnen.`,
+                    });
+
                     const emailInputSection = `
                     <div class="email-input">
                         <input type="email" name="email" autocomplete="email" placeholder="E-mailadres">
                         <button id="email-send-btn">${this.sendButtonIcon}</button>
                     </div>
                     `;
-
                     this.messages.push({
                         role: 'assistant',
+                        type: 'email-input',
                         content: emailInputSection,
                     });
                 }
@@ -331,10 +444,20 @@ class ChatBot extends HTMLElement {
                 document.cookie = `soofChatSession = ${data.token}; path = /; max-age=3600`;
                 this.chatSession = data.token;
 
+                this.shadowRoot.appendChild(document.createElement('script')).src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
+                this.shadowRoot.appendChild(document.createElement('script')).src = "https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.3.8/purify.min.js";
+
                 this.messages = [];
                 this.messages.push({
                     role: 'assistant',
+                    type: 'normal',
                     content: `Welkom bij de chat! Ik ben ${this.chatbotData?.customName || "Soof"}, de virtuele assistent🤖 van deze webwinkel. Ik ben in staat de meesten vragen voor je te beantwoorden, stel gerust je eerste vraag of kies één van de suggesties hieronder!`,
+                    options: [
+                        { label: "Waar is mijn bestelling?", value: "Waar is mijn bestelling op dit moment?" },
+                        { label: "Ik zoek een product", value: "Ik ben op zoek naar een product." },
+                        { label: "Ik wil mijn bestelling retourneren", value: "Hoe kan ik mijn bestelling retourneren?" },
+                        { label: "Wat kan je allemaal?", value: "Wat kan je allemaal doen voor mij?" }
+                    ]
                 });
 
                 this.responsePending = false; // API call starts
@@ -345,6 +468,7 @@ class ChatBot extends HTMLElement {
             console.error('There was a problem with the fetch operation:', error);
             this.messages.push({
                 role: 'assistant-error',
+                type: 'normal',
                 content: 'Failed to submit email.',
             });
         }
@@ -353,23 +477,26 @@ class ChatBot extends HTMLElement {
     }
 
     renderBase() {
+        this.loadScripts();
         this.shadowRoot.innerHTML = `
             <style>${this.styles}</style>
             <button class="toggle-chat-btn">${this.isOpen ? this.closeIcon : this.chatIcon}</button>
-            <div class="chat-window">
-                <div class="chat-header">
-                    <h4>${this.chatbotData?.shop.customName || "Klantenservice"}</h4>
-                    <span>Je chat met ${this.chatbotData?.customName || "Soof"}</span>
+            ${this.isOpen ? `
+                <div class="chat-window">
+                    <div class="chat-header">
+                        <h4>${this.chatbotData?.shop.customName || "Klantenservice"}</h4>
+                        <span>Je chat met ${this.chatbotData?.customName || "Soof"}</span>
+                    </div>
+                    <div class="chat-log"></div>
+                    <div class="chat-input">
+                        <input name="question" type="text" placeholder="Stel je vraag...">
+                        <button class="send-btn" ${this.responsePending ? 'disabled' : ''}>${this.sendButtonIcon}</button>
+                    </div>
                 </div>
-                <div class="chat-log"></div>
-                <div class="chat-input">
-                    <input name="question" type="text" placeholder="Stel je vraag...">
-                    <button class="send-btn" ${this.responsePending ? 'disabled' : ''}>${this.sendButtonIcon}</button>
-                </div>
-            </div>
+            ` : ''}
         `;
 
-        this.renderMessages();
+        this.isOpen && this.renderMessages();
         this.addBaseEventListeners();
     }
 
@@ -380,22 +507,41 @@ class ChatBot extends HTMLElement {
             return;
         }
 
-        chatLog.innerHTML = this.messages.map(msg => `
-            <div class="message-wrapper ${msg.role}">
-                <div class="message">${msg.content}</div>
-            </div>
-        `).join('');
+        chatLog.innerHTML = this.messages.map((msg, msgIndex) => {
+            if (msg.type === 'email-input') {
+                return `
+                    <div class="message-wrapper ${msg.role}">
+                        <div class="message">${msg.content}</div>
+                    </div>
+                `;
+            } else if (msg.type === 'normal') {
+                const messageHtml = marked.parse(DOMPurify.sanitize(msg.content));
+                return `
+                    <div class="message-wrapper ${msg.role}">
+                        <div class="message">${messageHtml}</div>
+                        ${msg.options ? `
+                            <div class="options">
+                                ${msg.options.map((option, optionIndex) => `
+                                    <button id="option-btn-${msgIndex}-${optionIndex}">${option.label}</button>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+        }).join('');
 
         this.addMessageEventListeners();
+        this.addOptionEventListeners();
     }
 
     async sendMessage(message) {
         this.responsePending = true; // API call starts
         this.updateSendButtonState();
 
-        this.messages.push({ role: 'user', content: message });
+        this.messages.push({ role: 'user', type: 'normal', content: message });
         const loadingMessageIndex = this.messages.length;
-        this.messages.push({ role: 'assistant-loading', content: '...' });
+        this.messages.push({ role: 'assistant-loading', type: 'normal', content: `${this.typingIndicator}` });
         this.renderMessages();
 
         // Scroll to the newest message
@@ -422,12 +568,14 @@ class ChatBot extends HTMLElement {
 
             this.messages.push({
                 role: 'assistant',
+                type: 'normal',
                 content: data.reply,
             });
         } catch (error) {
             console.error('There was a problem with the fetch operation:', error);
             this.messages.push({
                 role: 'assistant-error',
+                type: 'normal',
                 content: 'Sorry, there was an error processing your message. Please try again later.',
             });
         }
@@ -438,11 +586,17 @@ class ChatBot extends HTMLElement {
         this.updateSendButtonState();
         this.renderMessages();
 
-        // Return focus to the input field
         const inputField = this.shadowRoot.querySelector('.chat-input input');
         inputField.focus();
-        // Scroll to the newest message
         chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    loadScripts() {
+        if (!this.scriptsLoaded) {
+            this.shadowRoot.appendChild(document.createElement('script')).src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
+            this.shadowRoot.appendChild(document.createElement('script')).src = "https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.3.8/purify.min.js";
+            this.scriptsLoaded = true;
+        }
     }
 
     handleToggleChatClick(event) {
@@ -496,8 +650,11 @@ class ChatBot extends HTMLElement {
 
     addBaseEventListeners() {
         this.shadowRoot.querySelector('.toggle-chat-btn').addEventListener('click', this.handleToggleChatClick.bind(this));
-        this.shadowRoot.querySelector('.send-btn').addEventListener('click', this.handleSendButtonClick.bind(this));
-        this.shadowRoot.querySelector('.chat-input input').addEventListener('keydown', this.handleInputKeydown.bind(this));
+
+        if (this.isOpen) {
+            this.shadowRoot.querySelector('.send-btn').addEventListener('click', this.handleSendButtonClick.bind(this));
+            this.shadowRoot.querySelector('.chat-input input').addEventListener('keydown', this.handleInputKeydown.bind(this));
+        }
     }
 
     addMessageEventListeners() {
@@ -506,6 +663,22 @@ class ChatBot extends HTMLElement {
             this.shadowRoot.getElementById('email-send-btn').addEventListener('click', this.handleEmailSendButtonClick.bind(this));
         }
     }
+
+    addOptionEventListeners() {
+        this.messages.forEach((msg, msgIndex) => {
+            if (msg.options) {
+                msg.options.forEach((option, optionIndex) => {
+                    const button = this.shadowRoot.querySelector(`#option-btn-${msgIndex}-${optionIndex}`);
+                    if (button) {
+                        button.addEventListener('click', () => {
+                            this.messages[msgIndex].options = this.messages[msgIndex].options.filter((_, index) => index !== optionIndex);
+                            this.sendMessage(option.value);
+                        });
+                    }
+                });
+            }
+        });
+    }    
 }
 
 // Define the new element
