@@ -376,7 +376,7 @@ class ChatBot extends HTMLElement {
     }
 
     getChatSession() {
-        const item = localStorage.getItem('soof-chat-session');
+        const itemString = localStorage.getItem('soof-chat-session');
         const defaultObject = {
             active: false,
             expiresAt: null,
@@ -384,7 +384,8 @@ class ChatBot extends HTMLElement {
             transcript: null,
         }
 
-        if (item) {
+        if (itemString) {
+            const item = JSON.parse(itemString);
             const now = new Date();
             const expiresAt = new Date(item.expiresAt);
 
@@ -392,7 +393,7 @@ class ChatBot extends HTMLElement {
                 localStorage.removeItem('soof-chat-session');
                 return defaultObject;
             } else {
-                return JSON.parse(item);
+                return item;
             }
         } else {
             return defaultObject;
@@ -418,8 +419,8 @@ class ChatBot extends HTMLElement {
         };
     
         if (itemString) {
-            const now = new Date();
             const item = JSON.parse(itemString);
+            const now = new Date();
             const expiresAt = new Date(item.expiresAt);
     
             if (expiresAt < now) {
