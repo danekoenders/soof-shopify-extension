@@ -122,7 +122,7 @@ class ChatBot extends HTMLElement {
 
         .chat-header {
             background: linear-gradient(to right, ${styleGuide.primaryColor}, ${styleGuide.secondaryColor});
-            height: 140px;
+            min-height: 140px;
             color: white;
             border-top-left-radius: 15px;
             border-top-right-radius: 15px;
@@ -165,14 +165,15 @@ class ChatBot extends HTMLElement {
             display: flex;
             flex-direction: column;
             flex-grow: 1;
+            gap: 10px;
             overflow-y: auto;
-            padding: 14px 14px 8px 14px;
+            padding: 14px;
         }
     
         .chat-log .message-wrapper {
             display: flex;
             flex-direction: column;
-            margin-bottom: 10px;
+            gap: 6px;
             width: 100%;
         }
 
@@ -181,7 +182,6 @@ class ChatBot extends HTMLElement {
             flex-direction: row;
             flex-wrap: wrap;
             justify-content: flex-start;
-            margin-top: 5px;
             gap: 5px;
         }
 
@@ -386,6 +386,11 @@ class ChatBot extends HTMLElement {
         .carousel .splide__arrow {
             position: relative;
             transform: none;
+            background: ${styleGuide.secondaryColor};
+        }
+
+        .carousel .splide__arrow svg {
+            fill: ${styleGuide.whiteAccentColor};
         }
 
         .carousel .splide__arrow--prev {
@@ -439,7 +444,7 @@ class ChatBot extends HTMLElement {
     }
 
     get welcomeMessage() {
-        return `Welkom bij de chat! Ik ben ${this.chatbotData?.customName || "Soof"}, de virtuele assistent🤖 van deze webwinkel. Ik ben in staat de meesten vragen voor je te beantwoorden, stel gerust je eerste vraag of kies één van de suggesties hieronder!`;
+        return `Hey! 👋 Ik ben **${this.chatbotData.customName || "Soof"}**, de virtuele assistent🤖 van deze webwinkel. Ik ben in staat de meesten vragen voor je te beantwoorden. Stel gerust je eerste vraag of kies één van de **suggesties** hieronder!`;
     }
 
     async connectedCallback() {
@@ -557,7 +562,6 @@ class ChatBot extends HTMLElement {
         };
         localStorage.setItem('soof-chat-cache', JSON.stringify(item));
     }
-
 
     async fetchChatbotData() {
         try {
