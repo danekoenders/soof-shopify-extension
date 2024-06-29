@@ -2,11 +2,11 @@ class ChatBot extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
+        this.chatWrapper = null;
         this.isOpen = false;
         this.scriptsLoaded = false;
         this.messages = [];
         this.sendDisabled = true;
-        this.userEmail = null;
         this.chatbotData = null;
         this.chatSession = this.getChatSession();
         this.cache = this.getCache();
@@ -16,9 +16,22 @@ class ChatBot extends HTMLElement {
         this.loaderIcon = `<div class="loader"></div>`;
         this.typingIndicator = `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
         this.sendButtonIcon = `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 500 500"><g><g><polygon points="0,497.25 535.5,267.75 0,38.25 0,216.75 382.5,267.75 0,318.75"></polygon></g></g></svg>`;
+        this.carouselArrowIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" focusable="false"><path d="m15.5 0.932-4.3 4.38 14.5 14.6-14.5 14.5 4.3 4.4 14.6-14.6 4.4-4.3-4.4-4.4-14.6-14.6z"></path></svg>`;
     }
 
     get styles() {
+        const styleGuide = {
+            primaryColor: this.chatbotData.primaryColor || '#083358',
+            secondaryColor: this.chatbotData.secondaryColor || '#0D63A5',
+            accentColor: '#FFD717',
+            blackAccentColor: 'black',
+            whiteAccentColor: 'white',
+            dullWhiteAccentColor: '#f1f1f1',
+            dullGrayAccentColor: '#959595',
+            errorAccentColor: 'red',
+            backgroundColor: '#001F3F',
+        };
+
         return `
         :host {
           display: block;
@@ -35,11 +48,10 @@ class ChatBot extends HTMLElement {
             position: absolute;
             bottom: 80px;
             right: 0;
-            background-color: #fff;
-            border: 1px solid #ccc;
+            background-color: ${styleGuide.backgroundColor};
             border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            flex-direction: column; /* Stack children vertically */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            flex-direction: column;
             font-size 16px;
             line-height: 20px;
         }
@@ -49,8 +61,8 @@ class ChatBot extends HTMLElement {
         }
 
         .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #393939;
+            border: 4px solid ${styleGuide.blackAccentColor};
+            border-top: 4px solid ${styleGuide.accentColor};
             border-radius: 50%;
             width: 14px;
             height: 14px;
@@ -58,8 +70,8 @@ class ChatBot extends HTMLElement {
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); } /* Start position */
-            100% { transform: rotate(360deg); } /* End position, completing a full circle */
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         svg {
@@ -67,18 +79,31 @@ class ChatBot extends HTMLElement {
         }
 
         input {
-            border: 1px solid #ccc;
+            border: 1px solid ${styleGuide.whiteAccentColor};
             border-radius: 10px;
             padding: 12px 14px;
             font-size: 0.9em;
             width: 180px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: ${styleGuide.secondaryColor};
+        }
+
+        ::placeholder {
+            color: ${styleGuide.primaryColor};
+        }
+
+        ::-ms-input-placeholder {
+            color: ${styleGuide.primaryColor};
         }
     
         button {
           width: 60px;
           height: 60px;
           padding: 10px;
-          background-color: ${this.chatbotData.primaryColor || '#0070f3'};
+          background-color: ${styleGuide.secondaryColor};
           border-radius: 50%;
           color: white;
           border: none;
@@ -90,24 +115,50 @@ class ChatBot extends HTMLElement {
           filter: brightness(90%);
         }
 
+        .button[disabled] {
+            background-color: ${styleGuide.blackAccentColor};
+            cursor: not-allowed;
+        }
+
         .chat-header {
-            background: linear-gradient(to right, ${this.chatbotData.primaryColor || '#0070f3'}, ${this.chatbotData.secondaryColor || '#00e676'});
+            background: linear-gradient(to right, ${styleGuide.primaryColor}, ${styleGuide.secondaryColor});
+            height: 140px;
             color: white;
-            padding: 10px 20px;
             border-top-left-radius: 15px;
             border-top-right-radius: 15px;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
             line-height: 1.2;
             font-size: 1.2em;
         }
 
         .chat-header h4 {
+            font-size: 1.2em;
             margin: 0;
         }
 
         .chat-header span {
+            font-size: 0.9em;
+        }
+
+        .chat-header-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .chat-header-buttons button {
+            width: fit-content;
+            height: fit-content;
+            padding: 4px 10px;
+            border-radius: 5px;
+            border: 1px solid ${styleGuide.dullGrayAccentColor};
+            background: transparent;
+            color: ${styleGuide.dullGrayAccentColor};
             font-size: 0.8em;
+            cursor: pointer;
         }
     
         .chat-log {
@@ -116,7 +167,6 @@ class ChatBot extends HTMLElement {
             flex-grow: 1;
             overflow-y: auto;
             padding: 14px 14px 8px 14px;
-            border-bottom: 1px solid #ccc;
         }
     
         .chat-log .message-wrapper {
@@ -141,8 +191,8 @@ class ChatBot extends HTMLElement {
             padding: 5px 10px;
             border-radius: 4px;
             border: 0;
-            background: rgb(54, 54, 54);
-            color: white;
+            background: ${styleGuide.secondaryColor};
+            color: ${styleGuide.whiteAccentColor};
             font-size: 0.7em;
             cursor: pointer;
         }
@@ -156,7 +206,7 @@ class ChatBot extends HTMLElement {
             margin: 0;
             font-size: 1em;
             line-height: 1.4;
-            color: black;
+            color: ${styleGuide.dullWhiteAccentColor};
         }
 
         .chat-log .message h1,
@@ -167,7 +217,7 @@ class ChatBot extends HTMLElement {
         .chat-log .message h6 {
             margin: 0;
             font-weight: bold;
-            color: #333;
+            color: ${styleGuide.whiteAccentColor};
         }
 
         .chat-log .message h4,
@@ -177,6 +227,7 @@ class ChatBot extends HTMLElement {
         }
 
         .chat-log .message ul, ol {
+            color: ${styleGuide.dullWhiteAccentColor};
             margin: 0;
             padding: 12px 0px 6px 20px;
         }
@@ -187,7 +238,7 @@ class ChatBot extends HTMLElement {
         }
 
         .chat-log .message a {
-            color: #007bff;
+            color: ${styleGuide.accentColor};
             text-decoration: none;
         }
 
@@ -200,9 +251,8 @@ class ChatBot extends HTMLElement {
         }
 
         .chat-log .user .message {
-            border-radius: 20px 20px 1px;
-            background: #dcdcdc;
-            color: #000;
+            border-radius: 1px 20px 20px 20px;
+            background: ${styleGuide.primaryColor};
         }
 
         .chat-log .assistant {
@@ -210,17 +260,16 @@ class ChatBot extends HTMLElement {
         }
 
         .chat-log .assistant .message {
-            color: #1e1e1e;
-            border-radius: 20px 20px 20px 1px;
-            border: 2px solid #6d6d6d;
-            background: rgb(255, 255, 255);
+            border-radius: 1px 20px 20px 20px;
+            border: 2px solid ${styleGuide.secondaryColor};
+            background: ${styleGuide.primaryColor};
         }
 
         .chat-log .assistant-loading .message {
             color: black;
             border-radius: 20px 20px 20px 1px;
-            border: 2px solid #6d6d6d;
-            background: rgb(255, 255, 255);
+            border: 2px solid ${styleGuide.secondaryColor};
+            background: ${styleGuide.primaryColor};
         }
 
         .chat-log .assistant-loading .typing-indicator {
@@ -235,7 +284,7 @@ class ChatBot extends HTMLElement {
             width: 8px;
             height: 8px;
             margin: 0 2px;
-            background: #ccc;
+            background: ${styleGuide.secondaryColor};
             border-radius: 50%;
             animation: blink 1.4s infinite both;
         }
@@ -265,10 +314,10 @@ class ChatBot extends HTMLElement {
         }
 
         .chat-log .assistant-error .message {
-            color: #1e1e1e;
+            color: ${styleGuide.whiteAccentColor};
             border-radius: 20px 20px 20px 1px;
-            border: 2px solid red;
-            background: rgb(255, 255, 255);
+            border: 2px solid ${styleGuide.errorAccentColor};
+            background: ${styleGuide.primaryColor};
         }
 
         .chat-log .email-input {
@@ -282,52 +331,121 @@ class ChatBot extends HTMLElement {
             height: 42px;
             padding: 10px;
         }
-    
+
+        .carousel {
+            width: 100%;
+        }
+        
+        .carousel-item {
+            background-color: ${styleGuide.primaryColor};
+            color: ${styleGuide.whiteAccentColor};
+            border: 2px solid ${styleGuide.secondaryColor};
+            border-radius: 1px 20px 20px 20px;
+        }
+
+        .carousel-item-cover {
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 0 20px 0 0;
+        }
+
+        .carousel-item-details {
+            padding: 20px;
+        }
+
+        .carousel-utils {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px;
+        }
+
+        .carousel-progress {
+            width: 30%;
+            background: ${styleGuide.primaryColor};
+        }
+        
+        .carousel-progress-bar {
+            background: ${styleGuide.accentColor};
+            height: 2px;
+            transition: width 400ms ease;
+        }
+
+        .carousel .splide__arrows {
+            display: flex;
+            gap: 6px;
+            width: fit-content;
+            position: relative;
+        }
+
+        .carousel .splide__arrow {
+            position: relative;
+            transform: none;
+        }
+
+        .carousel .splide__arrow--prev {
+            left: 0;
+        }
+
+        .carousel .splide__arrow--next {
+            right: 0;
+        }
+
         .chat-input {
-          display: flex;
-          padding: 5px; /* Reduced padding */
-          background-color: #f7f7f7; /* Optional: Different background for clarity */
-          border-bottom-left-radius: 15px;
-          border-bottom-right-radius: 15px;
+            display: flex;
+            gap: 5px;
+            padding: 10px 14px;
+            background: linear-gradient(to right, ${styleGuide.primaryColor}, ${styleGuide.secondaryColor});
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
         }
     
         .chat-input input {
-          flex-grow: 1;
-          padding: 5px 10px; /* Reduced padding */
-          border: 1px solid #ccc;
-          border-radius: 12px;
-          font-size: 14px; /* Reduced font size */
+            color: ${styleGuide.primaryColor};
+            flex-grow: 1;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            background-color: ${styleGuide.whiteAccentColor};
+        }
+
+        .chat-input input:focus {
+            outline: none;
+            border: 1px solid ${styleGuide.secondaryColor};
         }
     
         .chat-input button {
-          margin-left: 5px; /* Reduced margin */
-          padding: 5px 10px; /* Reduced padding */
-          font-size: 14px; /* Reduced font size */
+            width: 55px;
+            height: 55px;
+            padding: 5px 15px;
+            color: ${styleGuide.whiteAccentColor};
+            background-color: ${styleGuide.primaryColor};
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s;
         }
-    
-        .send-btn {
-          padding: 5px 15px; /* Adjusted padding for better appearance */
-          color: white;
-          border: none;
-          border-radius: 15px;
-          cursor: pointer;
-          transition: background-color 0.3s;
-          font-size: 14px; /* Consistent with the input field */
-        }
-    
-        .send-btn[disabled] {
-          background-color: #b3b3b3; /* Grayed out color */
-          cursor: not-allowed;
-        }
-    
-        .send-btn:hover {
-          background-color: #0051bb; /* Darker shade on hover */
-        }
-
         `;
     }
 
+    get startChatMessage() {
+        return `<p>Welkom bij ${this.chatbotData?.shop.customName || "onze winkel"}! Vul hieronder je e-mailadres in om een chat te beginnen.</p>`;
+    }
+
+    get welcomeMessage() {
+        return `Welkom bij de chat! Ik ben ${this.chatbotData?.customName || "Soof"}, de virtuele assistent🤖 van deze webwinkel. Ik ben in staat de meesten vragen voor je te beantwoorden, stel gerust je eerste vraag of kies één van de suggesties hieronder!`;
+    }
+
     async connectedCallback() {
+        const chatWrapper = document.createElement('div');
+        chatWrapper.className = 'chat-wrapper';
+        this.chatWrapper = this.shadowRoot.appendChild(chatWrapper);
         try {
             if (this.cache.data.chatbot) {
                 this.chatbotData = this.cache.data.chatbot;
@@ -346,19 +464,12 @@ class ChatBot extends HTMLElement {
                 this.messages.push({
                     role: 'assistant',
                     type: 'normal',
-                    content: `Welkom bij ${this.chatbotData?.shop.customName || "onze winkel"}! Vul hieronder je e-mailadres in om een chat te beginnen.`,
+                    content: this.startChatMessage,
                 });
 
-                const emailInputSection = `
-                <div class="email-input">
-                    <input type="email" name="email" autocomplete="email" placeholder="E-mailadres">
-                    <button id="email-send-btn">${this.sendButtonIcon}</button>
-                </div>
-                `;
                 this.messages.push({
                     role: 'assistant',
                     type: 'email-input',
-                    content: emailInputSection,
                 });
             }
 
@@ -380,6 +491,7 @@ class ChatBot extends HTMLElement {
         const defaultObject = {
             active: false,
             expiresAt: null,
+            userEmail: null,
             sessionToken: null,
             transcript: null,
         }
@@ -404,6 +516,7 @@ class ChatBot extends HTMLElement {
         localStorage.setItem('soof-chat-session', JSON.stringify({
             active: true,
             expiresAt: this.chatSession.expiresAt,
+            userEmail: this.chatSession.userEmail,
             transcript: this.messages,
             sessionToken: this.chatSession.sessionToken,
         }));
@@ -417,12 +530,12 @@ class ChatBot extends HTMLElement {
             },
             expiresAt: null,
         };
-    
+
         if (itemString) {
             const item = JSON.parse(itemString);
             const now = new Date();
             const expiresAt = new Date(item.expiresAt);
-    
+
             if (expiresAt < now) {
                 localStorage.removeItem('soof-chat-cache');
                 return defaultObject;
@@ -437,14 +550,14 @@ class ChatBot extends HTMLElement {
     setCache() {
         const now = new Date();
         this.cache.data.chatbot = this.chatbotData;
-    
+
         const item = {
             data: this.cache.data,
             expiresAt: new Date(now.getTime() + (1 * 24 * 60 * 60 * 1000)).toISOString(),
         };
         localStorage.setItem('soof-chat-cache', JSON.stringify(item));
     }
-    
+
 
     async fetchChatbotData() {
         try {
@@ -464,7 +577,7 @@ class ChatBot extends HTMLElement {
 
     async startChat(email) {
         try {
-            const emailSendButton = this.shadowRoot.getElementById('email-send-btn');
+            const emailSendButton = this.shadowRoot.getElementById('email-send-button');
             emailSendButton.innerHTML = this.loaderIcon;
 
             const response = await fetch('https://soof-app--development.gadget.app/chatToken', {
@@ -492,7 +605,7 @@ class ChatBot extends HTMLElement {
                 this.messages.push({
                     role: 'assistant',
                     type: 'normal',
-                    content: `Welkom bij de chat! Ik ben ${this.chatbotData?.customName || "Soof"}, de virtuele assistent🤖 van deze webwinkel. Ik ben in staat de meesten vragen voor je te beantwoorden, stel gerust je eerste vraag of kies één van de suggesties hieronder!`,
+                    content: this.welcomeMessage,
                     options: [
                         { label: "Waar is mijn bestelling?", value: "Waar is mijn bestelling op dit moment?" },
                         { label: "Ik zoek een product", value: "Ik ben op zoek naar een product." },
@@ -504,6 +617,7 @@ class ChatBot extends HTMLElement {
                 this.sendDisabled = false;
                 this.updateSendButtonState();
                 this.chatSession.active = true;
+                this.chatSession.userEmail = email;
 
                 this.setChatSession();
             }
@@ -520,27 +634,37 @@ class ChatBot extends HTMLElement {
     }
 
     renderBase() {
-        this.loadScripts();
-        this.shadowRoot.innerHTML = `
-            <style>${this.styles}</style>
-            <button class="toggle-chat-btn">${this.isOpen ? this.closeIcon : this.chatIcon}</button>
-            ${this.isOpen ? `
-                <div class="chat-window">
-                    <div class="chat-header">
-                        <h4>${this.chatbotData?.shop.customName || "Klantenservice"}</h4>
-                        <span>Je chat met ${this.chatbotData?.customName || "Soof"}</span>
+        this.chatWrapper.innerHTML = `
+                <style>${this.styles}</style>
+                <button class="toggle-chat-button">${this.isOpen ? this.closeIcon : this.chatIcon}</button>
+                ${this.isOpen ? `
+                    <div class="chat-window">
+                        <div class="chat-header">
+                            <h4>${this.chatbotData?.shop.customName || "Klantenservice"}</h4>
+                            <span>Je chat met ${this.chatbotData?.customName || "Soof"}</span>
+                            <div class="chat-header-buttons">
+                                <button id="restart-chat-button">New chat</button>
+                                <button id="faq-button">FAQ</button>
+                            </div>
+                        </div>
+                        <div class="chat-log"></div>
+                        <div class="chat-input">
+                            <input name="question" type="text" placeholder="Stel je vraag...">
+                            <button id="send-button" ${this.sendDisabled ? 'disabled' : ''}>${this.sendButtonIcon}</button>
+                        </div>
                     </div>
-                    <div class="chat-log"></div>
-                    <div class="chat-input">
-                        <input name="question" type="text" placeholder="Stel je vraag...">
-                        <button class="send-btn" ${this.sendDisabled ? 'disabled' : ''}>${this.sendButtonIcon}</button>
-                    </div>
-                </div>
-            ` : ''}
-        `;
+                ` : ''}
+            `;
 
-        this.isOpen && this.renderMessages();
-        this.isOpen && this.updateSendButtonState();
+        console.log('rendering base...')
+        if (this.isOpen) {
+            if (this.scriptsLoaded) {
+                this.renderMessages();
+            } else {
+                this.loadScripts();
+            }
+            this.updateSendButtonState();
+        }
         this.addBaseEventListeners();
     }
 
@@ -555,7 +679,12 @@ class ChatBot extends HTMLElement {
             if (msg.type === 'email-input') {
                 return `
                     <div class="message-wrapper ${msg.role}">
-                        <div class="message">${msg.content}</div>
+                        <div class="message">
+                            <div class="email-input">
+                                <input type="email" name="email" ${msg.email && `value="${msg.email}" `}autocomplete="email" placeholder="E-mailadres">
+                                <button id="email-send-button">${this.sendButtonIcon}</button>
+                            </div>
+                        </div>
                     </div>
                 `;
             } else if (msg.type === 'normal') {
@@ -566,10 +695,50 @@ class ChatBot extends HTMLElement {
                         ${msg.options ? `
                             <div class="options">
                                 ${msg.options.map((option, optionIndex) => `
-                                    <button id="option-btn-${msgIndex}-${optionIndex}">${option.label}</button>
+                                    <button id="option-button-${msgIndex}-${optionIndex}">${option.label}</button>
                                 `).join('')}
                             </div>
                         ` : ''}
+                    </div>
+                `;
+            } else if (msg.type === 'productRecommendation') {
+                return `
+                    <div class="message-wrapper ${msg.role}">
+                        <div class="message"><p>Deze producten heb ik gevonden:</p></div>
+                    </div>
+
+                    <div class="message-wrapper ${msg.role}">
+                        <div class="splide carousel">
+                            <div class="splide__track">
+                                <ul class="splide__list">
+                                    ${msg.products.map(product => `
+                                        <li class="splide__slide">
+                                            <div class="carousel-item">
+                                                <div class="carousel-item-cover" style="background-image: url(${product.images[0]?.node.source || ''})"></div>
+                                                <div class="carousel-item-details">
+                                                    <p>${product.title}</p>
+                                                    <span>€${product.variants[0].node.price || ''}</span>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+
+                            <div class="carousel-utils">
+                                <div class="carousel-progress">
+                                    <div class="carousel-progress-bar"></div>
+                                </div>
+                                <div class="splide__arrows">
+                                    <button class="splide__arrow splide__arrow--prev">
+                                        ${this.carouselArrowIcon}
+                                    </button>
+                                    <button class="splide__arrow splide__arrow--next">
+                                        ${this.carouselArrowIcon}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 `;
             }
@@ -577,6 +746,7 @@ class ChatBot extends HTMLElement {
 
         this.addMessageEventListeners();
         this.addOptionEventListeners();
+        this.initializeProductCarousels();
     }
 
     async sendMessage(message) {
@@ -610,11 +780,19 @@ class ChatBot extends HTMLElement {
 
             const data = await response.json();
 
-            this.messages.push({
-                role: 'assistant',
-                type: 'normal',
-                content: data.reply,
-            });
+            if (data.type === 'normal') {
+                this.messages.push({
+                    role: 'assistant',
+                    type: 'normal',
+                    content: data.reply,
+                });
+            } else if (data.type === 'productRecommendation') {
+                this.messages.push({
+                    role: 'assistant',
+                    type: 'productRecommendation',
+                    products: data.products,
+                });
+            }
         } catch (error) {
             console.error('There was a problem with the fetch operation:', error);
             this.messages.push({
@@ -638,16 +816,107 @@ class ChatBot extends HTMLElement {
 
     loadScripts() {
         if (!this.scriptsLoaded) {
-            this.shadowRoot.appendChild(document.createElement('script')).src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
-            this.shadowRoot.appendChild(document.createElement('script')).src = "https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.3.8/purify.min.js";
-            this.scriptsLoaded = true;
+            const scriptPromises = [];
+
+            const markedScript = document.createElement('script');
+            markedScript.src = "https://cdn.jsdelivr.net/npm/marked/marked.min.js";
+            scriptPromises.push(new Promise((resolve, reject) => {
+                markedScript.onload = resolve;
+                markedScript.onerror = reject;
+                this.shadowRoot.appendChild(markedScript);
+            }));
+
+            const purifyScript = document.createElement('script');
+            purifyScript.src = "https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.3.8/purify.min.js";
+            scriptPromises.push(new Promise((resolve, reject) => {
+                purifyScript.onload = resolve;
+                purifyScript.onerror = reject;
+                this.shadowRoot.appendChild(purifyScript);
+            }));
+
+            const splideScript = document.createElement('script');
+            splideScript.src = "https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js";
+            scriptPromises.push(new Promise((resolve, reject) => {
+                splideScript.onload = resolve;
+                splideScript.onerror = reject;
+                this.shadowRoot.appendChild(splideScript);
+            }));
+
+            const splideCSS = document.createElement('link');
+            splideCSS.rel = "stylesheet";
+            splideCSS.href = "https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css";
+            this.shadowRoot.appendChild(splideCSS);
+
+            Promise.all(scriptPromises).then(() => {
+                this.scriptsLoaded = true;
+                this.renderBase();
+            }).catch(error => {
+                console.error('Error loading scripts:', error);
+            });
         }
+    }
+
+    initializeProductCarousels() {
+        const productCarousels = this.shadowRoot.querySelectorAll('.carousel');
+        productCarousels.forEach((carouselElement, index) => {
+            const splide = new Splide(carouselElement, {
+                type: 'slide',
+                perPage: 1,
+                gap: '10px',
+                padding: { left: '0', right: '40px' },
+                arrows: true,
+                pagination: false,
+                keyboard: true,
+                drag: true,
+                autoplay: true,
+                interval: 5000,
+                pauseOnHover: true,
+                pauseOnFocus: true,
+                direction: 'ltr',
+            })
+
+            const progressBar = splide.root.querySelector('.carousel-progress-bar');
+
+            splide.on('mounted move', function () {
+                let end = splide.Components.Controller.getEnd() + 1;
+                let rate = Math.min((splide.index + 1) / end, 1);
+                progressBar.style.width = String(100 * rate) + '%';
+            });
+
+            splide.mount();
+        });
     }
 
     handleToggleChatClick(event) {
         event.stopPropagation();
         this.isOpen = !this.isOpen;
         this.renderBase();
+    }
+
+    handleRestartChatButtonClick() {
+        this.chatSession.active = false;
+        this.chatSession.expiresAt = null;
+        this.chatSession.sessionToken = null;
+        this.chatSession.transcript = null;
+        localStorage.removeItem('soof-chat-session');
+
+        this.messages = [];
+        this.messages.push({
+            role: 'assistant',
+            type: 'normal',
+            content: this.startChatMessage,
+        });
+
+        this.messages.push({
+            role: 'assistant',
+            type: 'email-input',
+            email: this.chatSession.userEmail || null,
+        });
+
+        this.renderBase();
+    }
+
+    handleFaqButtonClick() {
     }
 
     handleSendButtonClick() {
@@ -685,7 +954,7 @@ class ChatBot extends HTMLElement {
     }
 
     updateSendButtonState() {
-        const sendButton = this.shadowRoot.querySelector('.send-btn');
+        const sendButton = this.shadowRoot.getElementById('send-button');
         if (this.sendDisabled) {
             sendButton.setAttribute('disabled', 'disabled');
         } else {
@@ -694,10 +963,12 @@ class ChatBot extends HTMLElement {
     }
 
     addBaseEventListeners() {
-        this.shadowRoot.querySelector('.toggle-chat-btn').addEventListener('click', this.handleToggleChatClick.bind(this));
+        this.shadowRoot.querySelector('.toggle-chat-button').addEventListener('click', this.handleToggleChatClick.bind(this));
 
         if (this.isOpen) {
-            this.shadowRoot.querySelector('.send-btn').addEventListener('click', this.handleSendButtonClick.bind(this));
+            this.shadowRoot.getElementById('restart-chat-button').addEventListener('click', this.handleRestartChatButtonClick.bind(this));
+            this.shadowRoot.getElementById('faq-button').addEventListener('click', this.handleFaqButtonClick.bind(this));
+            this.shadowRoot.getElementById('send-button').addEventListener('click', this.handleSendButtonClick.bind(this));
             this.shadowRoot.querySelector('.chat-input input').addEventListener('keydown', this.handleInputKeydown.bind(this));
         }
     }
@@ -705,7 +976,7 @@ class ChatBot extends HTMLElement {
     addMessageEventListeners() {
         if (!this.chatSession.active) {
             this.shadowRoot.querySelector('.email-input input').addEventListener('keydown', this.handleInputKeydown.bind(this));
-            this.shadowRoot.getElementById('email-send-btn').addEventListener('click', this.handleEmailSendButtonClick.bind(this));
+            this.shadowRoot.getElementById('email-send-button').addEventListener('click', this.handleEmailSendButtonClick.bind(this));
         }
     }
 
@@ -713,7 +984,7 @@ class ChatBot extends HTMLElement {
         this.messages.forEach((msg, msgIndex) => {
             if (msg.options) {
                 msg.options.forEach((option, optionIndex) => {
-                    const button = this.shadowRoot.querySelector(`#option-btn-${msgIndex}-${optionIndex}`);
+                    const button = this.shadowRoot.querySelector(`#option-button-${msgIndex}-${optionIndex}`);
                     if (button) {
                         button.addEventListener('click', () => {
                             this.messages[msgIndex].options = this.messages[msgIndex].options.filter((_, index) => index !== optionIndex);
