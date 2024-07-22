@@ -7,7 +7,7 @@ class ChatBot extends HTMLElement {
         this.scriptsLoaded = false;
         this.messages = [];
         this.sendDisabled = true;
-        this.chatbotData = null;
+        this.domainData = null;
         this.chatSession = this.getChatSession();
         this.cache = this.getCache();
 
@@ -21,8 +21,8 @@ class ChatBot extends HTMLElement {
 
     get styles() {
         const styleGuide = {
-            primaryColor: this.chatbotData.primaryColor || '#083358',
-            secondaryColor: this.chatbotData.secondaryColor || '#0D63A5',
+            primaryColor: this.domainData.chatbot?.primaryColor || '#083358',
+            secondaryColor: this.domainData.chatbot?.secondaryColor || '#0D63A5',
             accentColor: '#FFD717',
             blackAccentColor: 'black',
             whiteAccentColor: 'white',
@@ -440,11 +440,11 @@ class ChatBot extends HTMLElement {
     }
 
     get startChatMessage() {
-        return `<p>Welkom bij ${this.chatbotData?.shop.customName || "onze winkel"}! Vul hieronder je e-mailadres in om een chat te beginnen.</p>`;
+        return `<p>Welkom bij ${this.domainData.shop?.customName || "onze winkel"}! Vul hieronder je e-mailadres in om een chat te beginnen.</p>`;
     }
 
     get welcomeMessage() {
-        return `Hey! 👋 Ik ben **${this.chatbotData.customName || "Soof"}**, de virtuele assistent🤖 van deze webwinkel. Ik ben in staat de meesten vragen voor je te beantwoorden. Stel gerust je eerste vraag of kies één van de **suggesties** hieronder!`;
+        return `Hey! 👋 Ik ben **${this.domainData.chatbot.customName || "Soof"}**, de virtuele assistent🤖 van deze webwinkel. Ik ben in staat de meesten vragen voor je te beantwoorden. Stel gerust je eerste vraag of kies één van de **suggesties** hieronder!`;
     }
 
     async connectedCallback() {
@@ -452,10 +452,10 @@ class ChatBot extends HTMLElement {
         chatWrapper.className = 'chat-wrapper';
         this.chatWrapper = this.shadowRoot.appendChild(chatWrapper);
         try {
-            if (this.cache.data.chatbot) {
-                this.chatbotData = this.cache.data.chatbot;
+            if (this.cache.data.chatbot && this.cache.data.shop) {
+                this.domainData = this.cache.data;
             } else {
-                await this.fetchChatbotData();
+                await this.fetchDomainData();
                 this.setCache();
             }
 
@@ -532,6 +532,7 @@ class ChatBot extends HTMLElement {
         const defaultObject = {
             data: {
                 chatbot: null,
+                shop: null,
             },
             expiresAt: null,
         };
@@ -554,7 +555,7 @@ class ChatBot extends HTMLElement {
 
     setCache() {
         const now = new Date();
-        this.cache.data.chatbot = this.chatbotData;
+        this.cache.data = this.domainData;
 
         const item = {
             data: this.cache.data,
@@ -563,9 +564,9 @@ class ChatBot extends HTMLElement {
         localStorage.setItem('soof-chat-cache', JSON.stringify(item));
     }
 
-    async fetchChatbotData() {
+    async fetchDomainData() {
         try {
-            const response = await fetch('https://soof-app--development.gadget.app/api/chatbot/serve', {
+            const response = await fetch('./apps/soof-proxy/domain/serve', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -573,7 +574,7 @@ class ChatBot extends HTMLElement {
             });
 
             if (!response.ok) throw new Error('Failed to fetch');
-            this.chatbotData = await response.json();
+            this.domainData = await response.json();
         } catch (error) {
             console.error('Fetch error:', error);
         }
@@ -584,7 +585,7 @@ class ChatBot extends HTMLElement {
             const emailSendButton = this.shadowRoot.getElementById('email-send-button');
             emailSendButton.innerHTML = this.loaderIcon;
 
-            const response = await fetch('https://soof-app--development.gadget.app/chatToken', {
+            const response = await fetch('./apps/soof-proxy/chat/session/chatToken', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -644,8 +645,8 @@ class ChatBot extends HTMLElement {
                 ${this.isOpen ? `
                     <div class="chat-window">
                         <div class="chat-header">
-                            <h4>${this.chatbotData?.shop.customName || "Klantenservice"}</h4>
-                            <span>Je chat met ${this.chatbotData?.customName || "Soof"}</span>
+                            <h4>${this.domainData.shop?.customName || "Klantenservice"}</h4>
+                            <span>Je chat met ${this.domainData.chatbot?.customName || "Soof"}</span>
                             <div class="chat-header-buttons">
                                 <button id="restart-chat-button">New chat</button>
                                 <button id="faq-button">FAQ</button>
@@ -767,7 +768,7 @@ class ChatBot extends HTMLElement {
         chatLog.scrollTop = chatLog.scrollHeight;
 
         try {
-            const response = await fetch('https://soof-app--development.gadget.app/api/assistant/chat', {
+            const response = await fetch('./apps/soof-proxy/assistant/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
