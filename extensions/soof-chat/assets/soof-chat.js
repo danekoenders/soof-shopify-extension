@@ -2,6 +2,7 @@ class ChatBot extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
+        this.isMobile = this.mobileCheck();
         this.chatWrapper = null;
         this.isOpen = false;
         this.scriptsLoaded = false;
@@ -35,21 +36,43 @@ class ChatBot extends HTMLElement {
         return `
         :host {
           display: block;
-          position: fixed; /* Change to fixed position */
-          bottom: 25px; /* Adjust the distance from the bottom */
-          right: 25px; /* Adjust the distance from the right */
-          z-index: 9999; /* Ensure the chat bot appears above other content */
+          position: fixed;
+          bottom: 25px;
+          right: 25px;
+          z-index: 141;
+        }
+
+        ${this.isMobile && this.isOpen ? `
+            .chat-wrapper {
+                position: fixed;
+                width: 100vw;
+                height: 100vh;
+                height: -webkit-fill-available;
+                bottom: 0;
+                right: 0;
+            }
+
+            .toggle-chat-button {
+                position: absolute;
+                right: 1em;
+                top: 1em;
+                z-index: 142;
+                background: none;
+                width: 50px;
+                height: 50px;
+            }
+        ` : ''
         }
 
         .chat-window {
             display: ${this.isOpen ? 'flex' : 'none'};
-            width: 450px;
-            height: 750px;
+            width: ${this.isMobile ? '100%' : '450px'};
+            height: ${this.isMobile ? '100%' : '750px'};;
             position: absolute;
-            bottom: 80px;
+            bottom: ${this.isMobile ? '0' : '80px'};
             right: 0;
             background-color: ${styleGuide.backgroundColor};
-            border-radius: 15px;
+            border-radius: ${this.isMobile ? '0' : '15px'};
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
             flex-direction: column;
             font-size 16px;
@@ -82,7 +105,7 @@ class ChatBot extends HTMLElement {
             border: 1px solid ${styleGuide.whiteAccentColor};
             border-radius: 10px;
             padding: 12px 14px;
-            font-size: 0.9em;
+            font-size: ${this.isMobile ? '16px' : '0.9em'};
             width: 180px;
         }
 
@@ -124,8 +147,8 @@ class ChatBot extends HTMLElement {
             background: linear-gradient(to right, ${styleGuide.primaryColor}, ${styleGuide.secondaryColor});
             min-height: 140px;
             color: white;
-            border-top-left-radius: 15px;
-            border-top-right-radius: 15px;
+            border-top-left-radius: ${this.isMobile ? '0' : '15px'};
+            border-top-right-radius: ${this.isMobile ? '0' : '15px'};
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -406,8 +429,8 @@ class ChatBot extends HTMLElement {
             gap: 5px;
             padding: 10px 14px;
             background: linear-gradient(to right, ${styleGuide.primaryColor}, ${styleGuide.secondaryColor});
-            border-bottom-left-radius: 15px;
-            border-bottom-right-radius: 15px;
+            border-bottom-left-radius: ${this.isMobile ? '0' : '15px'};
+            border-bottom-right-radius: ${this.isMobile ? '0' : '15px'};
         }
     
         .chat-input input {
@@ -416,7 +439,7 @@ class ChatBot extends HTMLElement {
             padding: 5px 10px;
             border: none;
             border-radius: 12px;
-            font-size: 1em;
+            ${this.isMobile ? '16px' : '1em'};
             background-color: ${styleGuide.whiteAccentColor};
         }
 
@@ -485,11 +508,17 @@ class ChatBot extends HTMLElement {
     }
 
     disconnectedCallback() {
-        // Clear any timeouts
         if (this.loadingTimeout) {
             clearTimeout(this.loadingTimeout);
         }
+        this.toggleBodyScroll(false);
     }
+
+    mobileCheck() {
+        let check = false;
+        (function (a) { if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0, 4))) check = true; })(navigator.userAgent || navigator.vendor || window.opera);
+        return check;
+    };
 
     getChatSession() {
         const itemString = localStorage.getItem('soof-chat-session');
@@ -528,7 +557,7 @@ class ChatBot extends HTMLElement {
     }
 
     getCache() {
-        const itemString = localStorage.getItem('soof-chat-cache');
+        const itemString = sessionStorage.getItem('soof-chat-cache');
         const defaultObject = {
             data: {
                 chatbot: null,
@@ -543,7 +572,7 @@ class ChatBot extends HTMLElement {
             const expiresAt = new Date(item.expiresAt);
 
             if (expiresAt < now) {
-                localStorage.removeItem('soof-chat-cache');
+                sessionStorage.removeItem('soof-chat-cache');
                 return defaultObject;
             } else {
                 return item;
@@ -561,12 +590,12 @@ class ChatBot extends HTMLElement {
             data: this.cache.data,
             expiresAt: new Date(now.getTime() + (1 * 24 * 60 * 60 * 1000)).toISOString(),
         };
-        localStorage.setItem('soof-chat-cache', JSON.stringify(item));
+        sessionStorage.setItem('soof-chat-cache', JSON.stringify(item));
     }
 
     async fetchDomainData() {
         try {
-            const response = await fetch('./apps/soof-proxy/domain/serve', {
+            const response = await fetch(`${window.location.origin}/apps/soof-proxy/domain/serve`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -585,7 +614,7 @@ class ChatBot extends HTMLElement {
             const emailSendButton = this.shadowRoot.getElementById('email-send-button');
             emailSendButton.innerHTML = this.loaderIcon;
 
-            const response = await fetch('./apps/soof-proxy/chat/session/chatToken', {
+            const response = await fetch(`${window.location.origin}/apps/soof-proxy/chat/session/chatToken`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -768,7 +797,7 @@ class ChatBot extends HTMLElement {
         chatLog.scrollTop = chatLog.scrollHeight;
 
         try {
-            const response = await fetch('./apps/soof-proxy/assistant/chat', {
+            const response = await fetch(`${window.location.origin}/apps/soof-proxy/assistant/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -895,7 +924,18 @@ class ChatBot extends HTMLElement {
     handleToggleChatClick(event) {
         event.stopPropagation();
         this.isOpen = !this.isOpen;
+        this.toggleBodyScroll(this.isOpen && this.isMobile);
         this.renderBase();
+    }
+
+    toggleBodyScroll(disable) {
+        if (disable) {
+            document.body.style.overflow = 'hidden';
+            document.body.style.height = '100%';
+        } else {
+            document.body.style.overflow = '';
+            document.body.style.height = '';
+        }
     }
 
     handleRestartChatButtonClick() {
