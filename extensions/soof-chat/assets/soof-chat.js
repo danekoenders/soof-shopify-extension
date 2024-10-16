@@ -684,10 +684,10 @@ class ChatBot extends HTMLElement {
 
                 this.sendDisabled = false;
                 this.hideChatInput = false;
-                this.updateSendState();
                 this.chatSession.active = true;
                 this.chatSession.userEmail = email;
 
+                this.updateSendState();
                 this.setChatSession();
             }
         } catch (error) {
@@ -714,7 +714,9 @@ class ChatBot extends HTMLElement {
                             <span>Je chat met ${this.domainData.chatbot?.customName || 'Soof'}</span>
                             <div class="chat-header-buttons">
                                 <button id="restart-chat-button">New chat</button>
+                                <!-- // TODO: Add FAQ button
                                 <button id="faq-button">FAQ</button>
+                                -->
                             </div>
                         </div>
                         <div class="chat-log"></div>
@@ -792,7 +794,7 @@ class ChatBot extends HTMLElement {
                     <div class="message-wrapper ${msg.role}">
                         <div class="message">
                             <h4>Order #${msg.order.orderNumber}</h4>
-                            <p>Status: ${msg.order.status}</p>
+                            <p>Status: ${msg.order.fulfillmentStatus}</p>
                         </div>
                     </div>
                 `;
@@ -1046,7 +1048,7 @@ class ChatBot extends HTMLElement {
 
     handleSendButtonClick() {
         const inputField = this.shadowRoot.querySelector('.chat-input input');
-        if (inputField.value.trim()) {
+        if (inputField.value.trim() && !this.sendDisabled) {
             this.sendMessage(inputField.value.trim());
             this.clearAndFocusInput(inputField);
         }
@@ -1081,20 +1083,11 @@ class ChatBot extends HTMLElement {
 
     updateSendState() {
         const sendButton = this.shadowRoot.getElementById('send-button');
-        const chatInput = this.shadowRoot.querySelector('.chat-input');
-        const inputField = this.shadowRoot.getElementById('chat-input-field');
 
-        if (this.sendDisabled) {
-            if (this.hideChatInput && !this.chatSession.active) {
-                chatInput.style.display = 'none';
-            } else {
-                chatInput.style.display = 'flex';
-                sendButton.setAttribute('disabled', 'disabled');
-                inputField.setAttribute('disabled', 'disabled');
-            }
+        if (this.sendDisabled || !this.chatSession.active) {
+            sendButton.setAttribute('disabled', 'disabled');
         } else {
             sendButton.removeAttribute('disabled');
-            inputField.removeAttribute('disabled');
         }
     }
 
@@ -1107,7 +1100,8 @@ class ChatBot extends HTMLElement {
             this.shadowRoot
                 .getElementById('restart-chat-button')
                 .addEventListener('click', this.handleRestartChatButtonClick.bind(this));
-            this.shadowRoot.getElementById('faq-button').addEventListener('click', this.handleFaqButtonClick.bind(this));
+            // TODO: Add FAQ button
+            // this.shadowRoot.getElementById('faq-button').addEventListener('click', this.handleFaqButtonClick.bind(this));
             this.shadowRoot.getElementById('send-button').addEventListener('click', this.handleSendButtonClick.bind(this));
             this.shadowRoot
                 .getElementById('chat-input-field')
