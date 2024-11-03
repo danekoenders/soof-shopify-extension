@@ -9,9 +9,10 @@ class ChatBot extends HTMLElement {
         this.messages = [];
         this.sendDisabled = true;
         this.hideChatInput = true;
-        this.domainData = null;
+        this.serveData = null;
         this.chatSession = this.getChatSession();
         this.cache = this.getCache();
+        this.soofProxyURI = 'soof-proxy--dev';
 
         this.chatIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon"><path d="M2 15V5c0-1.1.9-2 2-2h16a2 2 0 0 1 2 2v15a1 1 0 0 1-1.7.7L16.58 17H4a2 2 0 0 1-2-2z"/><path  d="M6 7h12a1 1 0 0 1 0 2H6a1 1 0 1 1 0-2zm0 4h8a1 1 0 0 1 0 2H6a1 1 0 0 1 0-2z"/></svg>`;
         this.closeIcon = `<svg xmlns="http://www.w3.org/2000/svg" style="display: block; margin: auto; transform: scale(1.5, 1.5);" viewBox="0 0 24 24" class="icon"><path transform="translate(0.5,0)" fill-rule="evenodd" d="M15.78 14.36a1 1 0 0 1-1.42 1.42l-2.82-2.83-2.83 2.83a1 1 0 1 1-1.42-1.42l2.83-2.82L7.3 8.7a1 1 0 0 1 1.42-1.42l2.83 2.83 2.82-2.83a1 1 0 0 1 1.42 1.42l-2.83 2.83 2.83 2.82z"/></svg>`;
@@ -23,8 +24,8 @@ class ChatBot extends HTMLElement {
 
     get styles() {
         const styleGuide = {
-            primaryColor: this.domainData.chatbot?.primaryColor || '#083358',
-            secondaryColor: this.domainData.chatbot?.secondaryColor || '#0D63A5',
+            primaryColor: this.serveData.chatbot?.primaryColor || '#083358',
+            secondaryColor: this.serveData.chatbot?.secondaryColor || '#0D63A5',
             accentColor: '#FFD717',
             blackAccentColor: 'black',
             whiteAccentColor: 'white',
@@ -477,12 +478,12 @@ class ChatBot extends HTMLElement {
     }
 
     get startChatMessage() {
-        return `<p>Welkom bij ${this.domainData.shop?.customName || 'onze winkel'
+        return `<p>Welkom bij ${this.serveData.shop?.customName || 'onze winkel'
             }! Vul hieronder je e-mailadres in om een chat te beginnen.</p>`;
     }
 
     get welcomeMessage() {
-        return `Hey! 👋 Ik ben **${this.domainData.chatbot.customName || 'Soof'
+        return `Hey! 👋 Ik ben **${this.serveData.chatbot.customName || 'Soof'
             }**, de virtuele assistent🤖 van deze webwinkel. Ik ben in staat de meesten vragen voor je te beantwoorden. Stel gerust je eerste vraag of kies één van de **suggesties** hieronder!`;
     }
 
@@ -492,9 +493,9 @@ class ChatBot extends HTMLElement {
         this.chatWrapper = this.shadowRoot.appendChild(chatWrapper);
         try {
             if (this.cache.data.chatbot && this.cache.data.shop) {
-                this.domainData = this.cache.data;
+                this.serveData = this.cache.data;
             } else {
-                await this.fetchDomainData();
+                await this.fetchServeData();
                 this.setCache();
             }
 
@@ -613,7 +614,7 @@ class ChatBot extends HTMLElement {
 
     setCache() {
         const now = new Date();
-        this.cache.data = this.domainData;
+        this.cache.data = this.serveData;
 
         const item = {
             data: this.cache.data,
@@ -622,9 +623,9 @@ class ChatBot extends HTMLElement {
         localStorage.setItem('soof-chat-cache', JSON.stringify(item));
     }
 
-    async fetchDomainData() {
+    async fetchServeData() {
         try {
-            const response = await fetch(`${window.location.origin}/apps/soof-proxy--dev/domain/serve`, {
+            const response = await fetch(`${window.location.origin}/apps/${this.soofProxyURI}/chatbot/serve`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -632,7 +633,7 @@ class ChatBot extends HTMLElement {
             });
 
             if (!response.ok) throw new Error('Failed to fetch');
-            this.domainData = await response.json();
+            this.serveData = await response.json();
         } catch (error) {
             console.error('Fetch error:', error);
         }
@@ -643,12 +644,14 @@ class ChatBot extends HTMLElement {
             const emailSendButton = this.shadowRoot.getElementById('email-send-button');
             emailSendButton.innerHTML = this.loaderIcon;
 
-            const response = await fetch(`${window.location.origin}/apps/soof-proxy--dev/chat/session/chatToken`, {
+            const response = await fetch(`${window.location.origin}/apps/${this.soofProxyURI}/chat/session/chatToken`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email: email }),
+                body: JSON.stringify({
+                    email: email,
+                }),
             });
 
             if (!response.ok) {
@@ -710,8 +713,8 @@ class ChatBot extends HTMLElement {
                 ? `
                     <div class="chat-window">
                         <div class="chat-header">
-                            <h4>${this.domainData.shop?.customName || 'Klantenservice'}</h4>
-                            <span>Je chat met ${this.domainData.chatbot?.customName || 'Soof'}</span>
+                            <h4>${this.serveData.shop?.customName || 'Klantenservice'}</h4>
+                            <span>Je chat met ${this.serveData.chatbot?.customName || 'Soof'}</span>
                             <div class="chat-header-buttons">
                                 <button id="restart-chat-button">New chat</button>
                                 <!-- // TODO: Add FAQ button
@@ -790,12 +793,27 @@ class ChatBot extends HTMLElement {
                     <div class="message-wrapper ${msg.role}">
                         <div class="message"><p>Hier zijn de gegevens van je order:</p></div>
                     </div>
-
+                    
                     <div class="message-wrapper ${msg.role}">
                         <div class="message">
                             <h4>Order #${msg.order.orderNumber}</h4>
                             <p>Status: ${msg.order.fulfillmentStatus}</p>
+                            <a href="${msg.order.orderStatusUrl}" target="_blank">Details</a>
                         </div>
+                        ${msg.options
+                            ? `
+                            <div class="options">
+                                ${msg.options
+                                .map(
+                                    (option, optionIndex) => `
+                                    <button id="option-button-${msgIndex}-${optionIndex}">${option.label}</button>
+                                `
+                                )
+                                .join('')}
+                            </div>
+                        `
+                            : ''
+                        }
                     </div>
                 `;
                 } else if (msg.type === 'productRecommendation') {
@@ -852,11 +870,13 @@ class ChatBot extends HTMLElement {
         this.initializeProductCarousels();
     }
 
-    async sendMessage(message) {
+    async sendMessage({ message, functionObj }) {
         this.sendDisabled = true; // API call starts
         this.updateSendState();
 
-        this.messages.push({ role: 'user', type: 'normal', content: message });
+        if (message) {
+            this.messages.push({ role: 'user', type: 'normal', content: message });
+        }
         const loadingMessageIndex = this.messages.length;
         this.messages.push({ role: 'assistant-loading', type: 'normal', content: `${this.typingIndicator}` });
         this.renderMessages();
@@ -866,14 +886,15 @@ class ChatBot extends HTMLElement {
         chatLog.scrollTop = chatLog.scrollHeight;
 
         try {
-            const response = await fetch(`${window.location.origin}/apps/soof-proxy--dev/assistant/chat`, {
+            const response = await fetch(`${window.location.origin}/apps/${this.soofProxyURI}/assistant/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     sessionToken: this.chatSession.sessionToken,
-                    message: message,
+                    message: message || null,
+                    functionObj: functionObj || null,
                 }),
             });
 
@@ -888,12 +909,22 @@ class ChatBot extends HTMLElement {
                     role: 'assistant',
                     type: data.type,
                     content: data.reply,
+                    options: data.options,
                 });
+            } else if (data.type === 'frontendFunction') {
+                if (data.frontendFunction === "sendOrderTracking") {
+                    this.messages.push({
+                        role: 'assistant',
+                        type: 'normal',
+                        content: data.reply.message,
+                    });
+                }
             } else if (data.type === 'orderTracking') {
                 this.messages.push({
                     role: 'assistant',
                     type: data.type,
                     order: data.order,
+                    options: data.options,
                 });
             } else if (data.type === 'productRecommendation') {
                 this.messages.push({
@@ -1049,7 +1080,7 @@ class ChatBot extends HTMLElement {
     handleSendButtonClick() {
         const inputField = this.shadowRoot.querySelector('.chat-input input');
         if (inputField.value.trim() && !this.sendDisabled) {
-            this.sendMessage(inputField.value.trim());
+            this.sendMessage({ message: inputField.value.trim() });
             this.clearAndFocusInput(inputField);
         }
     }
@@ -1062,7 +1093,7 @@ class ChatBot extends HTMLElement {
                 this.startChat(inputField.value.trim());
                 this.clearAndFocusInput(inputField);
             } else if (inputField.type === 'text' && !this.sendDisabled) {
-                this.sendMessage(inputField.value.trim());
+                this.sendMessage({ message: inputField.value.trim() });
                 this.clearAndFocusInput(inputField);
             }
         }
@@ -1130,12 +1161,31 @@ class ChatBot extends HTMLElement {
                             this.messages[msgIndex].options = this.messages[msgIndex].options.filter(
                                 (_, index) => index !== optionIndex
                             );
-                            this.sendMessage(option.value);
+
+                            if (option.function) {
+                                const params = option.function.params || {};
+                                this[option.function.name](params);
+                            } else if (option.value) {
+                                this.sendMessage({ message: option.value });
+                            } else {
+                                console.error(`Option button ${option.label} has no function or value.`);
+                            }
                         });
                     }
                 });
             }
         });
+    }
+
+    // Option Functions
+    async sendOrderTracking(params) {
+        const functionObj = {
+            name: 'sendOrderTracking',
+            params: {
+                orderId: params.orderId,
+            },
+        };
+        this.sendMessage({ functionName: 'sendOrderTracking', functionObj });
     }
 }
 

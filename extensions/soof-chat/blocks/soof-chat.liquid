@@ -1,20 +1,11 @@
-<script
-  id="soof-ai-chat"
-  src="https://soof-app--development.gadget.app/serve-temp?chatbotId={{ block.settings.chatbotId }}"
-  defer
-></script>
+<script defer src="{{ 'soof-chat.js' | asset_url }}"></script>
+
+<soof-chat></soof-chat>
 
 {% schema %}
 {
   "name": "Soof Chat",
   "target": "body",
-  "settings": [
-    {
-      "type": "text",
-      "id": "chatbotId",
-      "label": "Chatbot ID",
-      "default": "Place chatbot ID here.."
-    }
-  ]
+  "settings": []
 }
 {% endschema %}
