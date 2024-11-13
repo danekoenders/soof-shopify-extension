@@ -37,7 +37,7 @@
                 "faq": "FAQ"
             },
             "input": {
-                "placeholder": "Stel me iets..."
+                "placeholder": "Stel me een vraag..."
             }
         },
         "messages": {
