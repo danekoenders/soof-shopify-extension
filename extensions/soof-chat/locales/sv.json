@@ -1,0 +1,58 @@
+{
+    "chat": {
+        "start": {
+            "first": "Välkommen till",
+            "second": "! Fyll i din e-postadress nedan för att starta en chatt.",
+            "notSpecified": "vår butik"
+        },
+        "welcome": {
+            "message": {
+                "first": "Hej! 👋 Jag är **",
+                "second": "**, den virtuella assistenten🤖 för denna webbutik. Jag kan svara på de flesta av dina frågor. Ställ en fråga till mig eller välj ett av **alternativen** nedan!",
+                "notSpecified": "Soof"
+            },
+            "options": {
+                "1": {
+                    "label": "Spåra beställning",
+                    "value": "Jag vill ha den senaste leveransstatusen för min beställning."
+                },
+                "2": {
+                    "label": "Produktsökning",
+                    "value": "Jag letar efter en produkt."
+                },
+                "3": {
+                    "label": "Vad kan du göra?",
+                    "value": "Vad kan du göra som min assistent?"
+                }
+            }
+        },
+        "base": {
+            "header": {
+                "title": "Kundsupport",
+                "subtitle": {
+                    "first": "Du chattar med",
+                    "notSpecified": "Soof"
+                },
+                "newChat": "Ny chatt",
+                "faq": "FAQ"
+            },
+            "input": {
+                "placeholder": "Fråga mig vad som helst..."
+            }
+        },
+        "messages": {
+            "email": {
+                "placeholder": "E-postadress"
+            },
+            "orderTracking": {
+                "message": "Jag hittade information om din beställning:"
+            },
+            "productRecommendation": {
+                "message": "Jag hittade några produkter som kanske intresserar dig:"
+            }
+        }
+    },
+    "email": {
+        "error": "Ange en giltig e-postadress."
+    }
+}

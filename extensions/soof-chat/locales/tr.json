@@ -1,0 +1,58 @@
+{
+    "chat": {
+        "start": {
+            "first": "Hoş geldiniz",
+            "second": "! Sohbete başlamak için aşağıya e-posta adresinizi girin.",
+            "notSpecified": "mağazamıza"
+        },
+        "welcome": {
+            "message": {
+                "first": "Merhaba! 👋 Ben **",
+                "second": "**, bu web mağazasının sanal asistanıyım🤖. Sorularınızın çoğuna yanıt verebilirim. Bana bir soru sormaktan çekinmeyin veya aşağıdaki **seçeneklerden** birini seçin!",
+                "notSpecified": "Soof"
+            },
+            "options": {
+                "1": {
+                    "label": "Siparişi takip et",
+                    "value": "Siparişimin en güncel teslimat durumunu öğrenmek istiyorum."
+                },
+                "2": {
+                    "label": "Ürün arama",
+                    "value": "Bir ürün arıyorum."
+                },
+                "3": {
+                    "label": "Ne yapabilirsin?",
+                    "value": "Asistanım olarak ne yapabilirsin?"
+                }
+            }
+        },
+        "base": {
+            "header": {
+                "title": "Müşteri Desteği",
+                "subtitle": {
+                    "first": "Şu anda sohbet ediyorsunuz",
+                    "notSpecified": "Soof"
+                },
+                "newChat": "Yeni sohbet",
+                "faq": "SSS"
+            },
+            "input": {
+                "placeholder": "Bana herhangi bir şey sor..."
+            }
+        },
+        "messages": {
+            "email": {
+                "placeholder": "E-posta adresi"
+            },
+            "orderTracking": {
+                "message": "Sipariş detaylarınızı buldum:"
+            },
+            "productRecommendation": {
+                "message": "İlgilenebileceğiniz bazı ürünler buldum:"
+            }
+        }
+    },
+    "email": {
+        "error": "Lütfen geçerli bir e-posta adresi girin."
+    }
+}

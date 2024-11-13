@@ -1,0 +1,58 @@
+{
+    "chat": {
+        "start": {
+            "first": "환영합니다",
+            "second": "! 채팅을 시작하려면 아래에 이메일 주소를 입력하세요.",
+            "notSpecified": "우리 매장"
+        },
+        "welcome": {
+            "message": {
+                "first": "안녕하세요! 👋 저는 **",
+                "second": "**, 이 웹스토어의 가상 비서🤖입니다. 대부분의 질문에 답변할 수 있습니다. 궁금한 점이 있으면 질문하시거나 아래의 **옵션** 중 하나를 선택하세요!",
+                "notSpecified": "Soof"
+            },
+            "options": {
+                "1": {
+                    "label": "주문 추적",
+                    "value": "내 주문의 최신 배송 상태를 알고 싶습니다."
+                },
+                "2": {
+                    "label": "상품 검색",
+                    "value": "상품을 찾고 있습니다."
+                },
+                "3": {
+                    "label": "무엇을 할 수 있나요?",
+                    "value": "비서로서 무엇을 할 수 있나요?"
+                }
+            }
+        },
+        "base": {
+            "header": {
+                "title": "고객 지원",
+                "subtitle": {
+                    "first": "대화 중입니다",
+                    "notSpecified": "Soof"
+                },
+                "newChat": "새로운 채팅",
+                "faq": "FAQ"
+            },
+            "input": {
+                "placeholder": "무엇이든 물어보세요..."
+            }
+        },
+        "messages": {
+            "email": {
+                "placeholder": "이메일 주소"
+            },
+            "orderTracking": {
+                "message": "주문 세부 정보를 찾았습니다:"
+            },
+            "productRecommendation": {
+                "message": "관심이 있을 만한 상품을 찾았습니다:"
+            }
+        }
+    },
+    "email": {
+        "error": "유효한 이메일 주소를 입력하세요."
+    }
+}

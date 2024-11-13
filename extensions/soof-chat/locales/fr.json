@@ -1,0 +1,58 @@
+{
+    "chat": {
+        "start": {
+            "first": "Bienvenue chez",
+            "second": "! Saisissez votre adresse e-mail ci-dessous pour démarrer une discussion.",
+            "notSpecified": "notre magasin"
+        },
+        "welcome": {
+            "message": {
+                "first": "Salut ! 👋 Je suis **",
+                "second": "**, l'assistant virtuel🤖 de cette boutique en ligne. Je peux répondre à la plupart de vos questions. N'hésitez pas à me poser une question ou choisissez l'une des **options** ci-dessous !",
+                "notSpecified": "Soof"
+            },
+            "options": {
+                "1": {
+                    "label": "Suivre la commande",
+                    "value": "Je souhaite obtenir le dernier état de livraison de ma commande."
+                },
+                "2": {
+                    "label": "Recherche de produit",
+                    "value": "Je recherche un produit."
+                },
+                "3": {
+                    "label": "Que peux-tu faire ?",
+                    "value": "Que peux-tu faire en tant qu'assistant ?"
+                }
+            }
+        },
+        "base": {
+            "header": {
+                "title": "Service Client",
+                "subtitle": {
+                    "first": "Vous discutez avec",
+                    "notSpecified": "Soof"
+                },
+                "newChat": "Nouvelle discussion",
+                "faq": "FAQ"
+            },
+            "input": {
+                "placeholder": "Demandez-moi n'importe quoi..."
+            }
+        },
+        "messages": {
+            "email": {
+                "placeholder": "Adresse e-mail"
+            },
+            "orderTracking": {
+                "message": "J'ai trouvé les détails de votre commande :"
+            },
+            "productRecommendation": {
+                "message": "J'ai trouvé quelques produits qui pourraient vous intéresser :"
+            }
+        }
+    },
+    "email": {
+        "error": "Veuillez entrer une adresse e-mail valide."
+    }
+}

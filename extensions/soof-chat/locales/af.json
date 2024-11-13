@@ -1,0 +1,58 @@
+{
+    "chat": {
+        "start": {
+            "first": "Welkom by",
+            "second": "! Vul jou e-posadres hieronder in om 'n klets te begin.",
+            "notSpecified": "ons winkel",
+        },
+        "welcome": {
+            "message": {
+                "first": "Hey! 👋 Ek is **",
+                "second": "**, die virtuele assistent🤖 van hierdie webwinkel. Ek kan die meeste van jou vrae beantwoord. Voel vry om my 'n vraag te vra of kies een van die **voorstelle** hieronder!",
+                "notSpecified": "Soof"
+            },
+            "options": {
+                "1": {
+                    "label": "Volg bestelling",
+                    "value": "Ek wil graag die jongste afleweringsstatus van my bestelling kry."
+                },
+                "2": {
+                    "label": "Produk soek",
+                    "value": "Ek is op soek na 'n produk."
+                },
+                "3": {
+                    "label": "Wat kan jy doen?",
+                    "value": "Wat kan jy as my assistent doen?"
+                }
+            }
+        },
+        "base": {
+            "header": {
+                "title": "Kliëntediens",
+                "subtitle": {
+                    "first": "Jy gesels met",
+                    "notSpecified": "Soof"
+                },
+                "newChat": "Nuwe klets",
+                "faq": "Gereelde Vrae"
+            },
+            "input": {
+                "placeholder": "Vra my enigiets..."
+            }
+        },
+        "messages": {
+            "email": {
+                "placeholder": "E-posadres",
+            },
+            "orderTracking": {
+                "message": "Ek het jou bestellingbesonderhede gevind:"
+            },
+            "productRecommendation": {
+                "message": "Ek het 'n paar produkte gevind wat jou dalk sal interesseer:"
+            }
+        }
+    },
+    "email": {
+        "error": "Voer 'n geldige e-posadres in, asseblief.",
+    }
+}

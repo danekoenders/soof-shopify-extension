@@ -1,0 +1,58 @@
+{
+    "chat": {
+        "start": {
+            "first": "歡迎來到",
+            "second": "！請在下方填入您的電子郵件地址以開始聊天。",
+            "notSpecified": "我們的商店"
+        },
+        "welcome": {
+            "message": {
+                "first": "嗨！👋 我是**",
+                "second": "**，這家網店的虛擬助手🤖。我能回答您大部分的問題。隨時向我提問，或選擇以下**選項**之一！",
+                "notSpecified": "Soof"
+            },
+            "options": {
+                "1": {
+                    "label": "追蹤訂單",
+                    "value": "我想知道我的訂單的最新配送狀態。"
+                },
+                "2": {
+                    "label": "產品搜尋",
+                    "value": "我正在尋找一件產品。"
+                },
+                "3": {
+                    "label": "你能做什麼？",
+                    "value": "作為我的助手，你能做什麼？"
+                }
+            }
+        },
+        "base": {
+            "header": {
+                "title": "客戶支援",
+                "subtitle": {
+                    "first": "您正在與",
+                    "notSpecified": "Soof"
+                },
+                "newChat": "新聊天",
+                "faq": "FAQ"
+            },
+            "input": {
+                "placeholder": "問我任何問題……"
+            }
+        },
+        "messages": {
+            "email": {
+                "placeholder": "電子郵件地址"
+            },
+            "orderTracking": {
+                "message": "我找到了您的訂單詳細信息："
+            },
+            "productRecommendation": {
+                "message": "我找到了一些您可能感興趣的產品："
+            }
+        }
+    },
+    "email": {
+        "error": "請輸入有效的電子郵件地址。"
+    }
+}

@@ -1,0 +1,58 @@
+{
+    "chat": {
+        "start": {
+            "first": "欢迎来到",
+            "second": "！请在下方填写您的电子邮箱地址以开始聊天。",
+            "notSpecified": "我们的商店"
+        },
+        "welcome": {
+            "message": {
+                "first": "嗨！👋 我是**",
+                "second": "**，该网店的虚拟助手🤖。我可以回答您大部分的问题。随时可以向我提问，或者选择以下**选项**之一！",
+                "notSpecified": "Soof"
+            },
+            "options": {
+                "1": {
+                    "label": "追踪订单",
+                    "value": "我想了解我的订单的最新配送状态。"
+                },
+                "2": {
+                    "label": "产品搜索",
+                    "value": "我正在寻找一件产品。"
+                },
+                "3": {
+                    "label": "你能做什么？",
+                    "value": "作为我的助手，你能做些什么？"
+                }
+            }
+        },
+        "base": {
+            "header": {
+                "title": "客户支持",
+                "subtitle": {
+                    "first": "您正在与",
+                    "notSpecified": "Soof"
+                },
+                "newChat": "新聊天",
+                "faq": "FAQ"
+            },
+            "input": {
+                "placeholder": "问我任何问题……"
+            }
+        },
+        "messages": {
+            "email": {
+                "placeholder": "电子邮箱地址"
+            },
+            "orderTracking": {
+                "message": "我找到了您的订单详情："
+            },
+            "productRecommendation": {
+                "message": "我找到了一些您可能感兴趣的产品："
+            }
+        }
+    },
+    "email": {
+        "error": "请输入有效的电子邮箱地址。"
+    }
+}

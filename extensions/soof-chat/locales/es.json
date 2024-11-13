@@ -1,0 +1,58 @@
+{
+    "chat": {
+        "start": {
+            "first": "Bienvenido a",
+            "second": "! Ingresa tu dirección de correo electrónico abajo para iniciar un chat.",
+            "notSpecified": "nuestra tienda"
+        },
+        "welcome": {
+            "message": {
+                "first": "¡Hola! 👋 Soy **",
+                "second": "**, el asistente virtual🤖 de esta tienda en línea. Puedo responder la mayoría de tus preguntas. ¡No dudes en hacerme una pregunta o elige una de las **opciones** abajo!",
+                "notSpecified": "Soof"
+            },
+            "options": {
+                "1": {
+                    "label": "Rastrear pedido",
+                    "value": "Me gustaría conocer el estado de entrega más reciente de mi pedido."
+                },
+                "2": {
+                    "label": "Búsqueda de producto",
+                    "value": "Estoy buscando un producto."
+                },
+                "3": {
+                    "label": "¿Qué puedes hacer?",
+                    "value": "¿Qué puedes hacer como mi asistente?"
+                }
+            }
+        },
+        "base": {
+            "header": {
+                "title": "Atención al Cliente",
+                "subtitle": {
+                    "first": "Estás chateando con",
+                    "notSpecified": "Soof"
+                },
+                "newChat": "Nuevo chat",
+                "faq": "FAQ"
+            },
+            "input": {
+                "placeholder": "Pregúntame lo que sea..."
+            }
+        },
+        "messages": {
+            "email": {
+                "placeholder": "Correo electrónico"
+            },
+            "orderTracking": {
+                "message": "Encontré los detalles de tu pedido:"
+            },
+            "productRecommendation": {
+                "message": "Encontré algunos productos que podrían interesarte:"
+            }
+        }
+    },
+    "email": {
+        "error": "Por favor, introduce una dirección de correo válida."
+    }
+}

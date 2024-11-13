@@ -1,0 +1,58 @@
+{
+    "chat": {
+        "start": {
+            "first": "Vítejte v",
+            "second": "! Zadejte svůj e-mail níže pro zahájení chatu.",
+            "notSpecified": "našem obchodě"
+        },
+        "welcome": {
+            "message": {
+                "first": "Ahoj! 👋 Jsem **",
+                "second": "**, virtuální asistent🤖 tohoto obchodu. Mohu odpovědět na většinu vašich dotazů. Klidně mi položte otázku nebo vyberte jednu z **možností** níže!",
+                "notSpecified": "Soof"
+            },
+            "options": {
+                "1": {
+                    "label": "Sledovat objednávku",
+                    "value": "Chtěl(a) bych získat nejnovější stav doručení své objednávky."
+                },
+                "2": {
+                    "label": "Vyhledávání produktu",
+                    "value": "Hledám produkt."
+                },
+                "3": {
+                    "label": "Co umíš?",
+                    "value": "Co můžeš dělat jako můj asistent?"
+                }
+            }
+        },
+        "base": {
+            "header": {
+                "title": "Zákaznická podpora",
+                "subtitle": {
+                    "first": "Chatujete s",
+                    "notSpecified": "Soof"
+                },
+                "newChat": "Nový chat",
+                "faq": "FAQ"
+            },
+            "input": {
+                "placeholder": "Zeptejte se na cokoliv..."
+            }
+        },
+        "messages": {
+            "email": {
+                "placeholder": "E-mailová adresa"
+            },
+            "orderTracking": {
+                "message": "Našel(a) jsem podrobnosti o vaší objednávce:"
+            },
+            "productRecommendation": {
+                "message": "Našel(a) jsem některé produkty, které by vás mohly zajímat:"
+            }
+        }
+    },
+    "email": {
+        "error": "Zadejte platnou e-mailovou adresu."
+    }
+}

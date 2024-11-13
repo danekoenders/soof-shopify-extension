@@ -1,0 +1,58 @@
+{
+    "chat": {
+        "start": {
+            "first": "Velkommen til",
+            "second": "! Indtast din e-mailadresse nedenfor for at starte en chat.",
+            "notSpecified": "vores butik"
+        },
+        "welcome": {
+            "message": {
+                "first": "Hej! 👋 Jeg er **",
+                "second": "**, den virtuelle assistent🤖 for denne webshop. Jeg kan besvare de fleste af dine spørgsmål. Stil mig et spørgsmål, eller vælg en af **mulighederne** nedenfor!",
+                "notSpecified": "Soof"
+            },
+            "options": {
+                "1": {
+                    "label": "Spor ordre",
+                    "value": "Jeg vil gerne have den nyeste leveringsstatus for min ordre."
+                },
+                "2": {
+                    "label": "Produktsøgning",
+                    "value": "Jeg leder efter et produkt."
+                },
+                "3": {
+                    "label": "Hvad kan du gøre?",
+                    "value": "Hvad kan du gøre som min assistent?"
+                }
+            }
+        },
+        "base": {
+            "header": {
+                "title": "Kundeservice",
+                "subtitle": {
+                    "first": "Du chatter med",
+                    "notSpecified": "Soof"
+                },
+                "newChat": "Ny chat",
+                "faq": "FAQ"
+            },
+            "input": {
+                "placeholder": "Spørg mig om hvad som helst..."
+            }
+        },
+        "messages": {
+            "email": {
+                "placeholder": "E-mailadresse"
+            },
+            "orderTracking": {
+                "message": "Jeg fandt dine ordreoplysninger:"
+            },
+            "productRecommendation": {
+                "message": "Jeg fandt nogle produkter, der måske interesserer dig:"
+            }
+        }
+    },
+    "email": {
+        "error": "Indtast venligst en gyldig e-mailadresse."
+    }
+}

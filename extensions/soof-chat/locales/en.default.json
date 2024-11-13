@@ -1,10 +1,58 @@
 {
-  "ratings": {
-    "stars": {
-      "label": "Ratings"
+  "chat": {
+    "start": {
+      "first": "Welcome to",
+      "second": "! Fill in your email address below to start a chat.",
+      "notSpecified": "our store",
     },
-    "home": {
-      "recommendationText": "Recommended Product!"
+    "welcome": {
+      "message": {
+        "first": "Hey! 👋 I am **",
+        "second": "**, the virtual assistant🤖 of this webstore. I am able to answer most of your questions. Feel free to ask me a question or choose one of the **suggestions** below!",
+        "notSpecified": "Soof"
+      },
+      "options": {
+        "1": {
+          "label": "Track order",
+          "value": "I would like to get the latest delivery status of my order."
+        },
+        "2": {
+          "label": "Product search",
+          "value": "I am searching for a product."
+        },
+        "3": {
+          "label": "What can you do?",
+          "value": "What can you do as my assistant?"
+        }
+      }
+    },
+    "base": {
+      "header": {
+        "title": "Customer Support",
+        "subtitle": {
+          "first": "You're chatting with",
+          "notSpecified": "Soof"
+        },
+        "newChat": "New chat",
+        "faq": "FAQ"
+      },
+      "input": {
+        "placeholder": "Ask me anything..."
+      }
+    },
+    "messages": {
+      "email": {
+        "placeholder": "Email address",
+      },
+      "orderTracking": {
+        "message": "I found your order details:"
+      },
+      "productRecommendation": {
+        "message": "I found some products that might interest you:"
+      }
     }
+  },
+  "email": {
+    "error": "Please enter a valid email address.",
   }
 }

@@ -1,0 +1,58 @@
+{
+    "chat": {
+        "start": {
+            "first": "Witamy w",
+            "second": "! Wprowadź swój adres e-mail poniżej, aby rozpocząć czat.",
+            "notSpecified": "naszym sklepie"
+        },
+        "welcome": {
+            "message": {
+                "first": "Cześć! 👋 Jestem **",
+                "second": "**, wirtualnym asystentem🤖 tego sklepu. Mogę odpowiedzieć na większość Twoich pytań. Śmiało zadaj mi pytanie lub wybierz jedną z **opcji** poniżej!",
+                "notSpecified": "Soof"
+            },
+            "options": {
+                "1": {
+                    "label": "Śledzenie zamówienia",
+                    "value": "Chciałbym uzyskać najnowszy status dostawy mojego zamówienia."
+                },
+                "2": {
+                    "label": "Wyszukiwanie produktu",
+                    "value": "Szukam produktu."
+                },
+                "3": {
+                    "label": "Co możesz zrobić?",
+                    "value": "Co możesz zrobić jako mój asystent?"
+                }
+            }
+        },
+        "base": {
+            "header": {
+                "title": "Obsługa klienta",
+                "subtitle": {
+                    "first": "Rozmawiasz z",
+                    "notSpecified": "Soof"
+                },
+                "newChat": "Nowy czat",
+                "faq": "FAQ"
+            },
+            "input": {
+                "placeholder": "Zapytaj mnie o cokolwiek..."
+            }
+        },
+        "messages": {
+            "email": {
+                "placeholder": "Adres e-mail"
+            },
+            "orderTracking": {
+                "message": "Znalazłem szczegóły Twojego zamówienia:"
+            },
+            "productRecommendation": {
+                "message": "Znalazłem kilka produktów, które mogą Cię zainteresować:"
+            }
+        }
+    },
+    "email": {
+        "error": "Wprowadź prawidłowy adres e-mail."
+    }
+}

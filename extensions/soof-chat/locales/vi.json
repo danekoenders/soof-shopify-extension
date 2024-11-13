@@ -1,0 +1,58 @@
+{
+    "chat": {
+        "start": {
+            "first": "Chào mừng đến với",
+            "second": "! Nhập địa chỉ email của bạn bên dưới để bắt đầu trò chuyện.",
+            "notSpecified": "cửa hàng của chúng tôi"
+        },
+        "welcome": {
+            "message": {
+                "first": "Chào bạn! 👋 Tôi là **",
+                "second": "**, trợ lý ảo🤖 của cửa hàng này. Tôi có thể trả lời hầu hết các câu hỏi của bạn. Hãy thoải mái đặt câu hỏi hoặc chọn một trong các **tùy chọn** bên dưới!",
+                "notSpecified": "Soof"
+            },
+            "options": {
+                "1": {
+                    "label": "Theo dõi đơn hàng",
+                    "value": "Tôi muốn biết tình trạng giao hàng mới nhất của đơn hàng của tôi."
+                },
+                "2": {
+                    "label": "Tìm kiếm sản phẩm",
+                    "value": "Tôi đang tìm kiếm một sản phẩm."
+                },
+                "3": {
+                    "label": "Bạn có thể làm gì?",
+                    "value": "Bạn có thể làm gì với tư cách là trợ lý của tôi?"
+                }
+            }
+        },
+        "base": {
+            "header": {
+                "title": "Hỗ trợ khách hàng",
+                "subtitle": {
+                    "first": "Bạn đang trò chuyện với",
+                    "notSpecified": "Soof"
+                },
+                "newChat": "Trò chuyện mới",
+                "faq": "FAQ"
+            },
+            "input": {
+                "placeholder": "Hãy hỏi tôi bất cứ điều gì..."
+            }
+        },
+        "messages": {
+            "email": {
+                "placeholder": "Địa chỉ email"
+            },
+            "orderTracking": {
+                "message": "Tôi đã tìm thấy chi tiết đơn hàng của bạn:"
+            },
+            "productRecommendation": {
+                "message": "Tôi đã tìm thấy một số sản phẩm có thể bạn quan tâm:"
+            }
+        }
+    },
+    "email": {
+        "error": "Vui lòng nhập một địa chỉ email hợp lệ."
+    }
+}

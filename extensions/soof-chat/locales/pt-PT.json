@@ -1,0 +1,58 @@
+{
+    "chat": {
+        "start": {
+            "first": "Bem-vindo(a) à",
+            "second": "! Insira o seu endereço de e-mail abaixo para iniciar um chat.",
+            "notSpecified": "nossa loja"
+        },
+        "welcome": {
+            "message": {
+                "first": "Olá! 👋 Eu sou **",
+                "second": "**, o assistente virtual🤖 desta loja online. Posso responder à maioria das suas perguntas. Sinta-se à vontade para me fazer uma pergunta ou escolher uma das **opções** abaixo!",
+                "notSpecified": "Soof"
+            },
+            "options": {
+                "1": {
+                    "label": "Rastrear encomenda",
+                    "value": "Gostaria de obter o estado de entrega mais recente da minha encomenda."
+                },
+                "2": {
+                    "label": "Pesquisa de produto",
+                    "value": "Estou à procura de um produto."
+                },
+                "3": {
+                    "label": "O que pode fazer?",
+                    "value": "O que pode fazer como meu assistente?"
+                }
+            }
+        },
+        "base": {
+            "header": {
+                "title": "Apoio ao Cliente",
+                "subtitle": {
+                    "first": "Está a conversar com",
+                    "notSpecified": "Soof"
+                },
+                "newChat": "Novo chat",
+                "faq": "FAQ"
+            },
+            "input": {
+                "placeholder": "Pergunte-me o que quiser..."
+            }
+        },
+        "messages": {
+            "email": {
+                "placeholder": "Endereço de e-mail"
+            },
+            "orderTracking": {
+                "message": "Encontrei os detalhes da sua encomenda:"
+            },
+            "productRecommendation": {
+                "message": "Encontrei alguns produtos que podem interessar-lhe:"
+            }
+        }
+    },
+    "email": {
+        "error": "Por favor, insira um endereço de e-mail válido."
+    }
+}

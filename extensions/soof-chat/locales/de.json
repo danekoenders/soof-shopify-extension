@@ -1,0 +1,58 @@
+{
+    "chat": {
+        "start": {
+            "first": "Willkommen bei",
+            "second": "! Geben Sie unten Ihre E-Mail-Adresse ein, um einen Chat zu starten.",
+            "notSpecified": "unserem Laden"
+        },
+        "welcome": {
+            "message": {
+                "first": "Hey! 👋 Ich bin **",
+                "second": "**, der virtuelle Assistent🤖 dieses Onlineshops. Ich kann die meisten Ihrer Fragen beantworten. Stellen Sie mir eine Frage oder wählen Sie eine der **Optionen** unten!",
+                "notSpecified": "Soof"
+            },
+            "options": {
+                "1": {
+                    "label": "Bestellung verfolgen",
+                    "value": "Ich möchte den aktuellen Lieferstatus meiner Bestellung erfahren."
+                },
+                "2": {
+                    "label": "Produktsuche",
+                    "value": "Ich suche nach einem Produkt."
+                },
+                "3": {
+                    "label": "Was kannst du?",
+                    "value": "Was kannst du als mein Assistent tun?"
+                }
+            }
+        },
+        "base": {
+            "header": {
+                "title": "Kundensupport",
+                "subtitle": {
+                    "first": "Sie chatten mit",
+                    "notSpecified": "Soof"
+                },
+                "newChat": "Neuer Chat",
+                "faq": "FAQ"
+            },
+            "input": {
+                "placeholder": "Fragen Sie mich alles..."
+            }
+        },
+        "messages": {
+            "email": {
+                "placeholder": "E-Mail-Adresse"
+            },
+            "orderTracking": {
+                "message": "Ich habe Ihre Bestelldaten gefunden:"
+            },
+            "productRecommendation": {
+                "message": "Ich habe einige Produkte gefunden, die Sie interessieren könnten:"
+            }
+        }
+    },
+    "email": {
+        "error": "Bitte geben Sie eine gültige E-Mail-Adresse ein."
+    }
+}

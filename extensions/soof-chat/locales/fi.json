@@ -1,0 +1,58 @@
+{
+    "chat": {
+        "start": {
+            "first": "Tervetuloa",
+            "second": "! Täytä sähköpostiosoitteesi alla aloittaaksesi keskustelun.",
+            "notSpecified": "kauppaamme"
+        },
+        "welcome": {
+            "message": {
+                "first": "Hei! 👋 Olen **",
+                "second": "**, tämän verkkokaupan virtuaaliassistentti🤖. Voin vastata useimpiin kysymyksiisi. Kysy rohkeasti tai valitse jokin alla olevista **vaihtoehdoista**!",
+                "notSpecified": "Soof"
+            },
+            "options": {
+                "1": {
+                    "label": "Tilauksen seuranta",
+                    "value": "Haluaisin saada uusimman toimitustilanteen tilaukselleni."
+                },
+                "2": {
+                    "label": "Tuotehaku",
+                    "value": "Etsin tuotetta."
+                },
+                "3": {
+                    "label": "Mitä osaat tehdä?",
+                    "value": "Mitä osaat tehdä avustajanani?"
+                }
+            }
+        },
+        "base": {
+            "header": {
+                "title": "Asiakaspalvelu",
+                "subtitle": {
+                    "first": "Keskustelet nyt henkilön kanssa",
+                    "notSpecified": "Soof"
+                },
+                "newChat": "Uusi keskustelu",
+                "faq": "FAQ"
+            },
+            "input": {
+                "placeholder": "Kysy minulta mitä tahansa..."
+            }
+        },
+        "messages": {
+            "email": {
+                "placeholder": "Sähköpostiosoite"
+            },
+            "orderTracking": {
+                "message": "Löysin tilauksesi tiedot:"
+            },
+            "productRecommendation": {
+                "message": "Löysin joitain tuotteita, jotka saattavat kiinnostaa sinua:"
+            }
+        }
+    },
+    "email": {
+        "error": "Anna kelvollinen sähköpostiosoite."
+    }
+}

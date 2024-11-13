@@ -1,0 +1,58 @@
+{
+    "chat": {
+        "start": {
+            "first": "ようこそ",
+            "second": "へ！チャットを開始するには、下にメールアドレスを入力してください。",
+            "notSpecified": "当店"
+        },
+        "welcome": {
+            "message": {
+                "first": "こんにちは！👋 私は**",
+                "second": "**、このウェブストアのバーチャルアシスタント🤖です。ほとんどの質問にお答えできます。質問があればどうぞ、または下の**オプション**から選んでください！",
+                "notSpecified": "Soof"
+            },
+            "options": {
+                "1": {
+                    "label": "注文を追跡",
+                    "value": "注文の最新の配送状況を知りたいです。"
+                },
+                "2": {
+                    "label": "商品検索",
+                    "value": "商品を探しています。"
+                },
+                "3": {
+                    "label": "何ができますか？",
+                    "value": "アシスタントとして何ができますか？"
+                }
+            }
+        },
+        "base": {
+            "header": {
+                "title": "カスタマーサポート",
+                "subtitle": {
+                    "first": "あなたは",
+                    "notSpecified": "Soof"
+                },
+                "newChat": "新しいチャット",
+                "faq": "FAQ"
+            },
+            "input": {
+                "placeholder": "何でも聞いてください..."
+            }
+        },
+        "messages": {
+            "email": {
+                "placeholder": "メールアドレス"
+            },
+            "orderTracking": {
+                "message": "注文の詳細を見つけました："
+            },
+            "productRecommendation": {
+                "message": "興味があるかもしれない商品を見つけました："
+            }
+        }
+    },
+    "email": {
+        "error": "有効なメールアドレスを入力してください。"
+    }
+}

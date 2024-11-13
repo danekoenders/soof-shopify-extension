@@ -1,0 +1,58 @@
+{
+    "chat": {
+        "start": {
+            "first": "Benvenuto su",
+            "second": "! Inserisci il tuo indirizzo email qui sotto per avviare una chat.",
+            "notSpecified": "il nostro negozio"
+        },
+        "welcome": {
+            "message": {
+                "first": "Ciao! 👋 Sono **",
+                "second": "**, l'assistente virtuale🤖 di questo negozio online. Posso rispondere alla maggior parte delle tue domande. Sentiti libero di farmi una domanda o scegli una delle **opzioni** qui sotto!",
+                "notSpecified": "Soof"
+            },
+            "options": {
+                "1": {
+                    "label": "Traccia ordine",
+                    "value": "Vorrei conoscere lo stato attuale della consegna del mio ordine."
+                },
+                "2": {
+                    "label": "Ricerca prodotto",
+                    "value": "Sto cercando un prodotto."
+                },
+                "3": {
+                    "label": "Cosa puoi fare?",
+                    "value": "Cosa puoi fare come mio assistente?"
+                }
+            }
+        },
+        "base": {
+            "header": {
+                "title": "Assistenza Clienti",
+                "subtitle": {
+                    "first": "Stai chattando con",
+                    "notSpecified": "Soof"
+                },
+                "newChat": "Nuova chat",
+                "faq": "FAQ"
+            },
+            "input": {
+                "placeholder": "Chiedimi qualsiasi cosa..."
+            }
+        },
+        "messages": {
+            "email": {
+                "placeholder": "Indirizzo email"
+            },
+            "orderTracking": {
+                "message": "Ho trovato i dettagli del tuo ordine:"
+            },
+            "productRecommendation": {
+                "message": "Ho trovato alcuni prodotti che potrebbero interessarti:"
+            }
+        }
+    },
+    "email": {
+        "error": "Inserisci un indirizzo email valido."
+    }
+}

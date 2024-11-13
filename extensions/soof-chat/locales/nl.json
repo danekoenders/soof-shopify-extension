@@ -1,0 +1,58 @@
+{
+    "chat": {
+        "start": {
+            "first": "Welkom bij",
+            "second": "! Vul hieronder je e-mailadres in om een chat te starten.",
+            "notSpecified": "onze winkel"
+        },
+        "welcome": {
+            "message": {
+                "first": "Hey! 👋 Ik ben **",
+                "second": "**, de virtuele assistent🤖 van deze webwinkel. Ik kan de meeste van je vragen beantwoorden. Stel gerust een vraag of kies een van de **suggesties** hieronder!",
+                "notSpecified": "Soof"
+            },
+            "options": {
+                "1": {
+                    "label": "Volg bestelling",
+                    "value": "Ik wil de nieuwste leveringsstatus van mijn bestelling weten."
+                },
+                "2": {
+                    "label": "Product zoeken",
+                    "value": "Ik ben op zoek naar een product."
+                },
+                "3": {
+                    "label": "Wat kun je doen?",
+                    "value": "Wat kun je doen als mijn assistent?"
+                }
+            }
+        },
+        "base": {
+            "header": {
+                "title": "Klantenservice",
+                "subtitle": {
+                    "first": "Je chat met",
+                    "notSpecified": "Soof"
+                },
+                "newChat": "Nieuwe chat",
+                "faq": "FAQ"
+            },
+            "input": {
+                "placeholder": "Stel me iets..."
+            }
+        },
+        "messages": {
+            "email": {
+                "placeholder": "E-mailadres",
+            },
+            "orderTracking": {
+                "message": "Ik heb je bestelgegevens gevonden:"
+            },
+            "productRecommendation": {
+                "message": "Ik heb enkele producten gevonden die je misschien interesseren:"
+            }
+        }
+    },
+    "email": {
+        "error": "Vul een geldig e-mailadres in.",
+    }
+}
