@@ -1,3 +1,5 @@
+<soof-chat local-language="{{ localization.language.iso_code }}"></soof-chat>
+
 <script
   defer
 >
@@ -492,33 +494,37 @@
       chatWrapper.className = 'chat-wrapper';
       this.chatWrapper = this.shadowRoot.appendChild(chatWrapper);
       try {
-        if (this.cache.data.chatbot && this.cache.data.shop) {
-          this.serveData = this.cache.data;
-        } else {
-          await this.fetchServeData();
-          this.setCache();
-        }
-
-        if (this.chatSession.active) {
-          if (this.chatSession.transcript) {
-            this.messages = this.chatSession.transcript;
+        if (this.localLanguage) {
+          if (this.cache.data.chatbot && this.cache.data.shop) {
+            this.serveData = this.cache.data;
+          } else {
+            await this.fetchServeData();
+            this.setCache();
           }
-          this.chatSession.active = true;
-          this.sendDisabled = false;
+
+          if (this.chatSession.active) {
+            if (this.chatSession.transcript) {
+              this.messages = this.chatSession.transcript;
+            }
+            this.chatSession.active = true;
+            this.sendDisabled = false;
+          } else {
+            this.messages.push({
+              role: 'assistant',
+              type: 'normal',
+              content: this.startChatMessage,
+            });
+
+            this.messages.push({
+              role: 'assistant',
+              type: 'email-input',
+            });
+          }
+
+          this.renderBase();
         } else {
-          this.messages.push({
-            role: 'assistant',
-            type: 'normal',
-            content: this.startChatMessage,
-          });
-
-          this.messages.push({
-            role: 'assistant',
-            type: 'email-input',
-          });
+          console.error('Local language not set.');
         }
-
-        this.renderBase();
       } catch (error) {
         console.error('Error setting up chatbot:', error);
       }
@@ -1196,8 +1202,6 @@
     customElements.define('soof-chat', ChatBot);
   }
 </script>
-
-<soof-chat local-language="{{ localization.language.iso_code }}"></soof-chat>
 
 {% schema %}
 {
