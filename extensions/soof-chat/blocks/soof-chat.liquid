@@ -611,7 +611,7 @@
     }
 
     getCache() {
-      const itemString = localStorage.getItem('soof-chat-cache');
+      const itemString = sessionStorage.getItem('soof-chat-cache');
       const defaultObject = {
         data: {
           chatbot: null,
@@ -619,14 +619,14 @@
         },
         expiresAt: null,
       };
-
+    
       if (itemString) {
         const item = JSON.parse(itemString);
         const now = new Date();
         const expiresAt = new Date(item.expiresAt);
-
+    
         if (expiresAt < now) {
-          localStorage.removeItem('soof-chat-cache');
+          sessionStorage.removeItem('soof-chat-cache');
           return defaultObject;
         } else {
           return item;
@@ -639,13 +639,13 @@
     setCache() {
       const now = new Date();
       this.cache.data = this.serveData;
-
+    
       const item = {
         data: this.cache.data,
         expiresAt: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString(),
       };
-      localStorage.setItem('soof-chat-cache', JSON.stringify(item));
-    }
+      sessionStorage.setItem('soof-chat-cache', JSON.stringify(item));
+    }    
 
     async fetchServeData() {
       try {
