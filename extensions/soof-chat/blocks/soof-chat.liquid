@@ -29,18 +29,7 @@
     }
 
     get styles() {
-      const styleGuide = {
-        primaryColor: this.serveData.chatbot?.primaryColor || '#083358',
-        secondaryColor: this.serveData.chatbot?.secondaryColor || '#0D63A5',
-        accentColor: '#FFD717',
-        blackAccentColor: 'black',
-        whiteAccentColor: 'white',
-        dullWhiteAccentColor: '#f1f1f1',
-        dullGrayAccentColor: '#d3d3d3',
-        grayAccentColor: '#959595',
-        errorAccentColor: 'red',
-        backgroundColor: '#001F3F',
-      };
+      const styleGuide = this.serveData.chatbot.theme;
 
       return `
           :host {
@@ -80,7 +69,7 @@
               position: absolute;
               bottom: ${this.isMobile ? '0' : '80px'};
               right: 0;
-              background-color: ${styleGuide.backgroundColor};
+              background-color: ${styleGuide.background};
               border-radius: ${this.isMobile ? '0' : '15px'};
               box-shadow: 0 2px 10px rgba(0,0,0,0.5);
               flex-direction: column;
@@ -93,8 +82,8 @@
           }
 
           .loader {
-              border: 4px solid ${styleGuide.blackAccentColor};
-              border-top: 4px solid ${styleGuide.accentColor};
+              border: 4px solid ${styleGuide.tertiaryAccent};
+              border-top: 4px solid ${styleGuide.primaryAccent};
               border-radius: 50%;
               width: 14px;
               height: 14px;
@@ -107,59 +96,59 @@
           }
 
           svg {
-              fill: white;
+              fill: ${styleGuide.secondaryText};
           }
 
           input {
-              border: 1px solid ${styleGuide.whiteAccentColor};
+              border: 1px solid ${styleGuide.secondaryBorder};
               border-radius: 10px;
               padding: 12px 14px;
               font-size: ${this.isMobile ? '16px' : '0.9em'};
               width: 180px;
-              background-color: ${styleGuide.whiteAccentColor};
+              background-color: ${styleGuide.background};
           }
 
           input:focus {
               outline: none;
-              border-color: ${styleGuide.secondaryColor};
+              border-color: ${styleGuide.primaryAccent};
           }
 
           input:disabled {
-              background-color: ${styleGuide.dullGrayAccentColor};
+              background-color: ${styleGuide.disabledBackground};
               cursor: not-allowed;
           }
 
           ::placeholder {
-              color: ${styleGuide.primaryColor};
+              color: ${styleGuide.primaryText};
           }
 
           ::-ms-input-placeholder {
-              color: ${styleGuide.primaryColor};
+              color: ${styleGuide.primaryText};
           }
       
           button {
-          width: 60px;
-          height: 60px;
-          padding: 10px;
-          background-color: ${styleGuide.secondaryColor};
-          border-radius: 50%;
-          color: white;
-          border: none;
-          cursor: pointer;
-          transition: background-color 0.3s;
+            width: 60px;
+            height: 60px;
+            padding: 10px;
+            background-color: ${styleGuide.primaryBackground};
+            border-radius: 50%;
+            color: ${styleGuide.secondaryText};
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
           }
       
           button:hover {
-          filter: brightness(90%);
+            filter: brightness(90%);
           }
 
           .button:disabled {
-              background-color: ${styleGuide.blackAccentColor};
+              background-color: ${styleGuide.disabledBackground};
               cursor: not-allowed;
           }
 
           .chat-header {
-              background: linear-gradient(to right, ${styleGuide.primaryColor}, ${styleGuide.secondaryColor});
+              background: linear-gradient(130deg, ${styleGuide.primaryBackground} 50%, ${styleGuide.secondaryBackground} 100%);
               min-height: 140px;
               color: white;
               border-top-left-radius: ${this.isMobile ? '0' : '15px'};
@@ -192,9 +181,9 @@
               height: fit-content;
               padding: 4px 10px;
               border-radius: 5px;
-              border: 1px solid ${styleGuide.grayAccentColor};
+              border: 1px solid ${styleGuide.tertiaryAccent};
               background: transparent;
-              color: ${styleGuide.grayAccentColor};
+              color: ${styleGuide.tertiaryAccent};
               font-size: 0.8em;
               cursor: pointer;
           }
@@ -229,8 +218,8 @@
               padding: 5px 10px;
               border-radius: 4px;
               border: 0;
-              background: ${styleGuide.secondaryColor};
-              color: ${styleGuide.whiteAccentColor};
+              background: ${styleGuide.optionsBackground};
+              color: ${styleGuide.secondaryText};
               font-size: 0.8em;
               cursor: pointer;
           }
@@ -240,11 +229,33 @@
               width: fit-content;
           }
 
+          .chat-log .order-tracking .message {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              gap: 15px;
+          }
+
+          .chat-log .order-tracking .message h4 {
+              margin: 0;
+          }
+
+          .chat-log .order-tracking .message p {
+              text-transform: capitalize;
+              text-wrap-style: pretty;
+          }
+
+          .chat-log .order-tracking .message a {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+          }
+
           .chat-log .message p {
               margin: 0;
               font-size: 1em;
               line-height: 1.4;
-              color: ${styleGuide.dullWhiteAccentColor};
+              color: ${styleGuide.primaryText};
           }
 
           .chat-log .message h1,
@@ -255,7 +266,7 @@
           .chat-log .message h6 {
               margin: 0;
               font-weight: bold;
-              color: ${styleGuide.whiteAccentColor};
+              color: ${styleGuide.primaryText};
           }
 
           .chat-log .message h4,
@@ -265,7 +276,7 @@
           }
 
           .chat-log .message ul, ol {
-              color: ${styleGuide.dullWhiteAccentColor};
+              color: ${styleGuide.primaryText};
               margin: 0;
               padding: 12px 0px 6px 20px;
           }
@@ -276,7 +287,7 @@
           }
 
           .chat-log .message a {
-              color: ${styleGuide.accentColor};
+              color: ${styleGuide.accentText};
               text-decoration: none;
           }
 
@@ -290,7 +301,9 @@
 
           .chat-log .user .message {
               border-radius: 20px 1px 20px 20px;
-              background: ${styleGuide.primaryColor};
+              border: 1px solid ${styleGuide.secondaryBorder};
+              background: ${styleGuide.userChatBackground}12;
+              max-width: 90%;
           }
 
           .chat-log .assistant {
@@ -299,15 +312,16 @@
 
           .chat-log .assistant .message {
               border-radius: 1px 20px 20px 20px;
-              border: 2px solid ${styleGuide.secondaryColor};
-              background: ${styleGuide.primaryColor};
+              border: 1px solid ${styleGuide.primaryBorder};
+              background: ${styleGuide.botChatBackground};
+              max-width: 90%;
           }
 
           .chat-log .assistant-loading .message {
               color: black;
               border-radius: 1px 20px 20px 20px;
-              border: 2px solid ${styleGuide.secondaryColor};
-              background: ${styleGuide.primaryColor};
+              border: 1px solid ${styleGuide.primaryBorder};
+              background: ${styleGuide.botChatBackground};
           }
 
           .chat-log .assistant-loading .typing-indicator {
@@ -322,7 +336,7 @@
               width: 8px;
               height: 8px;
               margin: 0 2px;
-              background: ${styleGuide.secondaryColor};
+              background: ${styleGuide.accentText};
               border-radius: 50%;
               animation: blink 1.4s infinite both;
           }
@@ -352,10 +366,10 @@
           }
 
           .chat-log .assistant-error .message {
-              color: ${styleGuide.whiteAccentColor};
+              color: ${styleGuide.primaryText};
               border-radius: 1px 20px 20px 20px;
-              border: 2px solid ${styleGuide.errorAccentColor};
-              background: ${styleGuide.primaryColor};
+              border: 1px solid ${styleGuide.errorAccentColor};
+              background: ${styleGuide.botChatBackground};
           }
 
           .chat-log .email-input {
@@ -375,9 +389,9 @@
           }
           
           .carousel-item {
-              background-color: ${styleGuide.primaryColor};
-              color: ${styleGuide.whiteAccentColor};
-              border: 2px solid ${styleGuide.secondaryColor};
+              background-color: ${styleGuide.botChatBackground};
+              color: ${styleGuide.primaryText};
+              border: 1px solid ${styleGuide.primaryBorder};
               border-radius: 1px 20px 20px 20px;
           }
 
@@ -393,6 +407,8 @@
 
           .carousel-item-details {
               padding: 20px;
+              display: flex;
+              flex-direction: column;
           }
 
           .carousel-utils {
@@ -405,11 +421,11 @@
 
           .carousel-progress {
               width: 30%;
-              background: ${styleGuide.primaryColor};
+              background: ${styleGuide.dullGrayAccentColor};
           }
           
           .carousel-progress-bar {
-              background: ${styleGuide.accentColor};
+              background: ${styleGuide.primaryAccent};
               height: 2px;
               transition: width 400ms ease;
           }
@@ -424,11 +440,11 @@
           .carousel .splide__arrow {
               position: relative;
               transform: none;
-              background: ${styleGuide.secondaryColor};
+              background: ${styleGuide.secondaryBackground};
           }
 
           .carousel .splide__arrow svg {
-              fill: ${styleGuide.whiteAccentColor};
+              fill: ${styleGuide.secondaryText};
           }
 
           .carousel .splide__arrow--prev {
@@ -443,31 +459,33 @@
               display: flex;
               gap: 5px;
               padding: 10px 14px;
-              background: linear-gradient(to right, ${styleGuide.primaryColor}, ${styleGuide.secondaryColor});
               border-bottom-left-radius: ${this.isMobile ? '0' : '15px'};
               border-bottom-right-radius: ${this.isMobile ? '0' : '15px'};
           }
       
           .chat-input input {
-              color: ${styleGuide.primaryColor};
+              color: ${styleGuide.primaryText};
               flex-grow: 1;
               padding: 5px 10px;
               border: none;
               border-radius: 12px;
+              box-shadow: ${styleGuide.boxShadow};
               ${this.isMobile ? '16px' : '1em'};
+              background-color: ${styleGuide.background};
+              border: 1px solid ${styleGuide.background};
           }
 
           .chat-input input:focus {
               outline: none;
-              border: 1px solid ${styleGuide.secondaryColor};
+              border: 1px solid ${styleGuide.primaryAccent};
           }
       
           .chat-input button {
               width: 55px;
               height: 55px;
               padding: 5px 15px;
-              color: ${styleGuide.whiteAccentColor};
-              background-color: ${styleGuide.primaryColor};
+              color: ${styleGuide.secondaryText};
+              background-color: ${styleGuide.primaryBackground};
               border: none;
               border-radius: 15px;
               cursor: pointer;
@@ -475,7 +493,7 @@
           }
 
           .chat-input button:disabled {
-              background-color: ${styleGuide.dullGrayAccentColor};
+              background-color: ${styleGuide.disabledBackground};
               cursor: not-allowed;
           }
       `;
@@ -799,11 +817,15 @@
                       <div class="message"><p>{{ 'chat.messages.orderTracking.message' | t }}</p></div>
                   </div>
                   
-                  <div class="message-wrapper ${msg.role}">
+                  <div class="message-wrapper order-tracking ${msg.role}">
                       <div class="message">
+                        <div>
                           <h4>Order #${msg.order.orderNumber}</h4>
-                          <p>Status: ${msg.order.fulfillmentStatus}</p>
-                          <a href="${msg.order.orderStatusUrl}" target="_blank">Details</a>
+                          <p>Status: ${msg.order.financialStatus}</p>
+                        </div>
+                        <a href="${msg.order.orderStatusUrl}" target="_blank">
+                          <img src="{{ 'eye.svg' | asset_url }}">
+                        </a>
                       </div>
                       ${
                         msg.options
@@ -823,6 +845,11 @@
                   </div>
               `;
           } else if (msg.type === 'productRecommendation') {
+            const currentHost = window.location.origin;
+            const pathnameParts = window.location.pathname.split('/').filter(Boolean);
+            const languagePattern = /^[a-z]{2}(-[A-Z]{2})?$/;
+            const language = pathnameParts[0] && languagePattern.test(pathnameParts[0]) ? pathnameParts[0] : '';
+
             return `
                   <div class="message-wrapper ${msg.role}">
                       <div class="message"><p>{{ 'chat.messages.productRecommendation.message' | t }}</p></div>
@@ -841,8 +868,10 @@
                                                 product.images[0]?.node.source || ''
                                               })"></div>
                                               <div class="carousel-item-details">
-                                                  <p>${product.title}</p>
-                                                  <span>€${product.variants[0].node.price || ''}</span>
+                                                <a href="${currentHost}/${language ? `${language}/` : ''}products/${product.handle}" target="_blank">
+                                                  <span>${product.title}</span>
+                                                </a>
+                                                <span>€${product.variants[0].node.price || ''}</span>
                                               </div>
                                           </div>
                                       </li>
