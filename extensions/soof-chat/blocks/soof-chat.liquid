@@ -507,12 +507,31 @@
       return `{{ 'chat.welcome.message.first' | t }}` + `${this.serveData.chatbot.name || '{{ 'chat.welcome.message.notSpecified' | t }}'}` + `{{ 'chat.welcome.message.second' | t }}`;
     }
 
+    openChatWindow() {
+      if (!this.isOpen) {
+        this.isOpen = true;
+        this.toggleBodyScroll(this.isOpen && this.isMobile);
+        this.renderBase();
+      }
+    }
+  
+    closeChatWindow() {
+      if (this.isOpen) {
+        this.isOpen = false;
+        this.toggleBodyScroll(this.isOpen && this.isMobile);
+        this.renderBase();
+      }
+    }
+
     async connectedCallback() {
       const chatWrapper = document.createElement('div');
       chatWrapper.className = 'chat-wrapper';
       this.chatWrapper = this.shadowRoot.appendChild(chatWrapper);
       try {
         if (this.localLanguage) {
+          window.openSoofChat = this.openChatWindow.bind(this);
+          window.closeSoofChat = this.closeChatWindow.bind(this);
+
           if (this.cache.data.chatbot && this.cache.data.shop) {
             this.serveData = this.cache.data;
           } else {
@@ -663,7 +682,7 @@
       }
     }
 
-    async startChat(email) {
+    async startChat({ email }) {
       try {
         const emailSendButton = this.shadowRoot.getElementById('email-send-button');
         emailSendButton.innerHTML = this.loaderIcon;
@@ -1127,7 +1146,9 @@
 
       if (e.key === 'Enter' && inputField.value.trim()) {
         if (inputField.type === 'email') {
-          this.startChat(inputField.value.trim());
+          this.startChat({
+            email: inputField.value.trim()
+          });
           this.clearAndFocusInput(inputField);
         } else if (inputField.type === 'text' && !this.sendDisabled) {
           this.sendMessage({ message: inputField.value.trim() });
@@ -1139,7 +1160,9 @@
     handleEmailSendButtonClick() {
       const emailInputField = this.shadowRoot.querySelector('.email-input input[type="email"]');
       if (emailInputField.value.trim()) {
-        this.startChat(emailInputField.value.trim());
+        this.startChat({
+          email: emailInputField.value.trim()
+        });
         this.clearAndFocusInput(emailInputField);
       }
     }
