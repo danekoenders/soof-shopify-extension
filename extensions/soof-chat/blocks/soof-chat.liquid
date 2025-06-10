@@ -1,8 +1,6 @@
 <soof-chat local-language="{{ localization.language.iso_code }}"></soof-chat>
 
-<script
-  defer
->
+<script defer>
   class ChatBot extends HTMLElement {
     constructor() {
       super();
@@ -33,11 +31,11 @@
 
       return `
           :host {
-          display: block;
-          position: fixed;
-          bottom: 25px;
-          right: 25px;
-          z-index: 141;
+            display: block;
+            position: fixed;
+            bottom: 25px;
+            ${this.serveData.chatbot.options.alignment}: 25px;
+            z-index: 141;
           }
 
           ${this.isMobile && this.isOpen ? `
@@ -68,7 +66,7 @@
               height: ${this.isMobile ? '100%' : '750px'};;
               position: absolute;
               bottom: ${this.isMobile ? '0' : '80px'};
-              right: 0;
+              ${this.serveData.chatbot.options.alignment}: 0;
               background-color: ${styleGuide.background};
               border-radius: ${this.isMobile ? '0' : '15px'};
               box-shadow: 0 2px 10px rgba(0,0,0,0.5);
@@ -1256,9 +1254,9 @@
 </script>
 
 {% schema %}
-{
-  "name": "Soof Chat",
-  "target": "body",
-  "settings": []
-}
+  {
+    "name": "Soof Chat",
+    "target": "body",
+    "settings": []
+  }
 {% endschema %}
