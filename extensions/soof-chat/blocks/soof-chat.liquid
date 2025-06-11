@@ -17,6 +17,15 @@
       this.cache = this.getCache();
       this.soofProxyURI = 'soof-proxy--dev';
       this.localLanguage = this.getAttribute('local-language') || false;
+      this.assistantId = null;
+      this.threadId = null;
+      this.langGraphUrl = null;
+
+      // Track current LangGraph run state
+      this.currentRun = {
+        steps: {}, // nodeName -> {status: 'running'|'done', msgIndex}
+        respondMessageIndex: null,
+      };
 
       this.chatIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="icon"><path d="M2 15V5c0-1.1.9-2 2-2h16a2 2 0 0 1 2 2v15a1 1 0 0 1-1.7.7L16.58 17H4a2 2 0 0 1-2-2z"/><path  d="M6 7h12a1 1 0 0 1 0 2H6a1 1 0 1 1 0-2zm0 4h8a1 1 0 0 1 0 2H6a1 1 0 0 1 0-2z"/></svg>`;
       this.closeIcon = `<svg xmlns="http://www.w3.org/2000/svg" style="display: block; margin: auto; transform: scale(1.5, 1.5);" viewBox="0 0 24 24" class="icon"><path transform="translate(0.5,0)" fill-rule="evenodd" d="M15.78 14.36a1 1 0 0 1-1.42 1.42l-2.82-2.83-2.83 2.83a1 1 0 1 1-1.42-1.42l2.83-2.82L7.3 8.7a1 1 0 0 1 1.42-1.42l2.83 2.83 2.82-2.83a1 1 0 0 1 1.42 1.42l-2.83 2.83 2.83 2.82z"/></svg>`;
@@ -329,6 +338,20 @@
               margin-left: 6px;
           }
 
+          .typing-indicator {
+              display: inline-flex;
+              align-items: center;
+              gap: 2px;
+              color: ${styleGuide.accentText};
+              font-size: 1.2em;
+              animation: pulse 1.5s infinite;
+          }
+
+          @keyframes pulse {
+              0%, 100% { opacity: 0.4; }
+              50% { opacity: 1; }
+          }
+
           .typing-indicator span {
               display: inline-block;
               width: 8px;
@@ -494,6 +517,24 @@
               background-color: ${styleGuide.disabledBackground};
               cursor: not-allowed;
           }
+
+          .processing-status {
+              background: ${styleGuide.primaryAccent}20;
+              border: 1px solid ${styleGuide.primaryAccent};
+              border-radius: 12px;
+              padding: 8px 12px;
+              margin: 5px 0;
+              font-size: 0.85em;
+              color: ${styleGuide.primaryAccent};
+              text-align: center;
+              animation: statusPulse 2s infinite;
+              display: none;
+          }
+
+          @keyframes statusPulse {
+              0%, 100% { background: ${styleGuide.primaryAccent}20; }
+              50% { background: ${styleGuide.primaryAccent}30; }
+          }
       `;
     }
 
@@ -540,6 +581,16 @@
           if (this.chatSession.active) {
             if (this.chatSession.transcript) {
               this.messages = this.chatSession.transcript;
+            }
+            // Restore assistantId and threadId from session
+            if (this.chatSession.assistantId) {
+              this.assistantId = this.chatSession.assistantId;
+            }
+            if (this.chatSession.threadId) {
+              this.threadId = this.chatSession.threadId;
+            }
+            if (this.chatSession.langGraphUrl) {
+              this.langGraphUrl = this.chatSession.langGraphUrl;
             }
             this.chatSession.active = true;
             this.sendDisabled = false;
@@ -596,6 +647,9 @@
         userEmail: null,
         sessionToken: null,
         transcript: null,
+        assistantId: null,
+        threadId: null,
+        langGraphUrl: null,
       };
 
       if (itemString) {
@@ -623,6 +677,9 @@
           userEmail: this.chatSession.userEmail,
           transcript: this.messages,
           sessionToken: this.chatSession.sessionToken,
+          assistantId: this.assistantId,
+          threadId: this.threadId,
+          langGraphUrl: this.langGraphUrl,
         })
       );
     }
@@ -705,6 +762,9 @@
         if (data.token) {
           this.chatSession.sessionToken = data.token;
           this.chatSession.expiresAt = data.expiresAt;
+          this.assistantId = data.assistant;
+          this.threadId = data.thread;
+          this.langGraphUrl = data.langGraphUrl;
 
           this.shadowRoot.appendChild(document.createElement('script')).src =
             'https://cdn.jsdelivr.net/npm/marked/marked.min.js';
@@ -807,7 +867,27 @@
                   </div>
               `;
           } else if (msg.type === 'normal') {
-            const messageHtml = marked.parse(DOMPurify.sanitize(msg.content));
+            // Handle streaming messages with no content yet
+            let messageContent = msg.content || '';
+            if (msg.isStreaming && !messageContent) {
+              messageContent = '<span class="typing-indicator">●●●</span>';
+            }
+            
+            let messageHtml = '';
+            if (messageContent) {
+              if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
+                messageHtml = marked.parse(DOMPurify.sanitize(messageContent));
+              } else {
+                // Fallback: escape HTML entities and preserve line breaks
+                const escapeHtml = (unsafe) => unsafe
+                  .replace(/&/g, "&amp;")
+                  .replace(/</g, "&lt;")
+                  .replace(/>/g, "&gt;")
+                  .replace(/\"/g, "&quot;")
+                  .replace(/'/g, "&#039;");
+                messageHtml = `<p>${escapeHtml(messageContent).replace(/\n/g, '<br>')}</p>`;
+              }
+            }
             return `
                   <div class="message-wrapper ${msg.role}">
                       <div class="message">${messageHtml}</div>
@@ -914,6 +994,11 @@
                       </div>
                   </div>
               `;
+          } else if (msg.type === 'step') {
+            return `
+              <div class="message-wrapper assistant">
+                <div class="message" style="opacity:0.8;font-size:0.85em;">${msg.content}</div>
+              </div>`;
           }
         })
         .join('');
@@ -930,82 +1015,363 @@
       if (message) {
         this.messages.push({ role: 'user', type: 'normal', content: message });
       }
-      const loadingMessageIndex = this.messages.length;
-      this.messages.push({ role: 'assistant-loading', type: 'normal', content: `${this.typingIndicator}` });
+      
+      // Add assistant message that will be updated with streaming content
+      const assistantMessageIndex = this.messages.length;
+      this.messages.push({ 
+        role: 'assistant', 
+        type: 'normal', 
+        content: '', 
+        isStreaming: true 
+      });
+      // Remember index for later replacement after validation
+      this.currentRun.respondMessageIndex = assistantMessageIndex;
+      
       this.renderMessages();
 
       // Scroll to the newest message
       const chatLog = this.shadowRoot.querySelector('.chat-log');
       chatLog.scrollTop = chatLog.scrollHeight;
 
+      // Use stored threadId and assistantId from startChat response
+      if (!this.threadId || !this.assistantId || !this.langGraphUrl) {
+        console.error('Missing information. Make sure startChat was called successfully.');
+        this.messages[assistantMessageIndex] = {
+          role: 'assistant-error',
+          type: 'normal',
+          content: 'Session error: Missing information. Please restart the chat.',
+          isStreaming: false
+        };
+        this.renderMessages();
+        this.sendDisabled = false;
+        this.updateSendState();
+        return;
+      }
+
       try {
-        const response = await fetch(`${window.location.origin}/apps/${this.soofProxyURI}/assistant/chat`, {
+        const streamUrl = `${this.langGraphUrl}/threads/${this.threadId}/runs/stream`;
+        
+        // Prepare the input for LangGraph
+        const graphInput = {
+          messages: [
+            {
+              role: 'user',
+              content: message
+            }
+          ]
+        };
+
+        // Add function object if provided
+        if (functionObj) {
+          graphInput.functionObj = functionObj;
+        }
+
+        const requestBody = {
+          assistant_id: this.assistantId,
+          input: graphInput,
+          stream_mode: ['events', 'messages', 'updates'],
+          // Add session context if needed
+          config: {
+            configurable: {
+              session_token: this.chatSession.sessionToken,
+              myShopifyDomain: this.serveData.shop.myShopifyDomain,
+              local_language: this.localLanguage
+            }
+          }
+        };
+
+        const response = await fetch(streamUrl, {
           method: 'POST',
           headers: {
+            'Authorization': `Session ${this.chatSession.sessionToken}`,
+            'X-Shopify-Domain': this.serveData.shop.myShopifyDomain,
             'Content-Type': 'application/json',
+            'Accept': 'text/event-stream'
           },
-          body: JSON.stringify({
-            sessionToken: this.chatSession.sessionToken,
-            message: message || null,
-            functionObj: functionObj || null,
-            localLanguage: this.localLanguage,
-          }),
+          body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {
-          throw new Error('Network response was not ok');
+          const errorData = await response.json().catch(() => ({ message: response.statusText }));
+          throw new Error(`HTTP error ${response.status}: ${errorData.message || JSON.stringify(errorData)}`);
         }
 
-        const data = await response.json();
+        if (!response.body) {
+          throw new Error("Response body is null, cannot read stream.");
+        }
 
-        if (data.type === 'normal') {
-          this.messages.push({
-            role: 'assistant',
-            type: data.type,
-            content: data.reply,
-            options: data.options,
-          });
-        } else if (data.type === 'frontendFunction') {
-          if (data.frontendFunction === 'sendOrderTracking') {
-            this.messages.push({
-              role: 'assistant',
-              type: 'normal',
-              content: data.reply.message,
-            });
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        const processStream = async () => {
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) {
+              console.debug('[LangGraph] stream finished');
+              // Mark streaming as complete
+              this.messages[assistantMessageIndex].isStreaming = false;
+              this.renderMessages();
+              break;
+            }
+
+            const chunkText = decoder.decode(value, { stream: true });
+            console.debug('[LangGraph] raw chunk', chunkText);
+            buffer += chunkText;
+            let delimiterIndex;
+            // Split on blank line (handles \n\n or \r\n\r\n)
+            const delimiterRegex = /\r?\n\r?\n/;
+            while ((delimiterIndex = buffer.search(delimiterRegex)) >= 0) {
+              const eventString = buffer.substring(0, delimiterIndex);
+              buffer = buffer.substring(delimiterIndex).replace(delimiterRegex, '');
+              console.debug('[LangGraph] event string', eventString);
+              this.processSSEEvent(eventString, assistantMessageIndex);
+            }
           }
-        } else if (data.type === 'orderTracking') {
-          this.messages.push({
-            role: 'assistant',
-            type: data.type,
-            order: data.order,
-            options: data.options,
-          });
-        } else if (data.type === 'productRecommendation') {
-          this.messages.push({
-            role: 'assistant',
-            type: data.type,
-            products: data.products,
-          });
-        }
+        };
+
+        await processStream();
+
       } catch (error) {
-        console.error('There was a problem with the fetch operation:', error);
-        this.messages.push({
+        console.error('There was a problem with the streaming operation:', error);
+        
+        // Update the message to show error
+        this.messages[assistantMessageIndex] = {
           role: 'assistant-error',
           type: 'normal',
-          content: error.message,
-        });
+          content: `Streaming error: ${error.message}`,
+          isStreaming: false
+        };
+        this.renderMessages();
       }
 
-      //remove laoding message
-      this.messages.splice(loadingMessageIndex, 1);
       this.setChatSession();
       this.sendDisabled = false;
       this.updateSendState();
-      this.renderMessages();
 
       const inputField = this.shadowRoot.querySelector('.chat-input input');
-      inputField.focus();
+      if (inputField) {
+        inputField.focus();
+      }
       chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    processSSEEvent(eventString, messageIndex) {
+      if (!eventString.trim()) return;
+      console.debug('[LangGraph] Parsing event', eventString);
+      const lines = eventString.split(/\r?\n/);
+      let jsonDataAccumulator = '';
+      let eventType = null;
+
+      for (const line of lines) {
+        if (line.startsWith('data:')) {
+          jsonDataAccumulator += line.substring(5).trim();
+        } else if (line.startsWith('event:')) {
+          eventType = line.substring(6).trim();
+        }
+      }
+
+      console.debug('[LangGraph] eventType', eventType, 'json', jsonDataAccumulator);
+      if (jsonDataAccumulator) {
+        try {
+          const parsedData = JSON.parse(jsonDataAccumulator);
+          console.debug('[LangGraph] parsedData', parsedData);
+
+          let shouldUpdateMessage = false;
+          let newContent = '';
+
+          // Handle messages/partial events (contains cumulative content as array)
+          if (eventType === 'messages/partial') {
+            // Data is an array of message objects: [{"content": "...", ...}]
+            if (Array.isArray(parsedData) && parsedData.length > 0 && parsedData[0].content !== undefined) {
+              newContent = parsedData[0].content;
+              shouldUpdateMessage = true;
+              console.log('messages/partial - New content:', newContent);
+            }
+          }
+          // Handle events with on_chat_model_stream (individual chunks)
+          else if (eventType === 'events' && parsedData.event === 'on_chat_model_stream') {
+            if (parsedData.data && parsedData.data.chunk && parsedData.data.chunk.content) {
+              // Append chunk content to existing message
+              if (this.messages[messageIndex]) {
+                newContent = (this.messages[messageIndex].content || '') + parsedData.data.chunk.content;
+                shouldUpdateMessage = true;
+                console.log('on_chat_model_stream - New content:', newContent);
+              }
+            }
+          }
+          // Handle events with on_custom_event that have name messages/partial
+          else if (eventType === 'events' && parsedData.event === 'on_custom_event' && parsedData.name === 'messages/partial') {
+            // Data format: {"data": [{"content": "...", ...}]}
+            if (parsedData.data && Array.isArray(parsedData.data) && parsedData.data.length > 0 && parsedData.data[0].content !== undefined) {
+              newContent = parsedData.data[0].content;
+              shouldUpdateMessage = true;
+              console.log('on_custom_event messages/partial - New content:', newContent);
+            }
+          }
+
+          // Handle node execution information and show progress
+          if (eventType === 'events' && parsedData.metadata) {
+            const metadata = parsedData.metadata;
+            
+            // Extract node information
+            if (metadata.langgraph_node) {
+              const nodeInfo = {
+                node: metadata.langgraph_node,
+                step: metadata.langgraph_step,
+                event: parsedData.event
+              };
+              
+              this.updateNodeProgress(nodeInfo);
+              console.log('Node execution:', nodeInfo);
+            }
+          }
+
+          // Handle metadata events (run start)
+          if (eventType === 'metadata') {
+            console.log('Run started:', parsedData);
+            this.showProcessingStatus('Starting...');
+          }
+
+          // Handle updates events (completion)
+          if (eventType === 'updates') {
+            console.log('Updates received:', parsedData);
+            this.showProcessingStatus('Completed');
+          }
+
+          // Handle node lifecycle events
+          if (eventType === 'events' && parsedData.event && parsedData.metadata && parsedData.metadata.langgraph_node) {
+            const nodeName = parsedData.metadata.langgraph_node;
+            const nodeEvent = parsedData.event;
+            if (nodeEvent === 'on_chain_start') {
+              // Create a step message if not already present
+              if (!this.currentRun.steps[nodeName]) {
+                const stepMsgIndex = this.messages.length;
+                this.currentRun.steps[nodeName] = { status: 'running', msgIndex: stepMsgIndex };
+                this.messages.push({
+                  role: 'assistant-step',
+                  type: 'step',
+                  content: `🔄 ${this.getNodeStatusText({node:nodeName})}`,
+                  isStreaming: false,
+                });
+                this.renderMessages();
+              }
+            } else if (nodeEvent === 'on_chain_end') {
+              // Mark step done
+              const stepInfo = this.currentRun.steps[nodeName];
+              if (stepInfo) {
+                this.messages[stepInfo.msgIndex].content = `✅ ${this.getNodeStatusText({node:nodeName})}`;
+                this.renderMessages();
+              }
+              // If validateClaims ended, use validatedResponse
+              if (nodeName === 'validateClaims') {
+                const validated = parsedData.data && parsedData.data.output && parsedData.data.output.validatedResponse;
+                if (validated && this.currentRun.respondMessageIndex !== null) {
+                  const idx = this.currentRun.respondMessageIndex;
+                  this.messages[idx].content = validated;
+                  this.messages[idx].isStreaming = false;
+                  this.renderMessages();
+                }
+              }
+            }
+          }
+
+          // Update the message if we have new content
+          if (shouldUpdateMessage && this.messages[messageIndex]) {
+            this.messages[messageIndex].content = newContent;
+            this.messages[messageIndex].isStreaming = true;
+            this.renderMessages();
+            
+            // Auto-scroll to keep up with streaming content
+            const chatLog = this.shadowRoot.querySelector('.chat-log');
+            if (chatLog) {
+              chatLog.scrollTop = chatLog.scrollHeight;
+            }
+          }
+
+        } catch (error) {
+          console.warn('Failed to parse SSE data:', error, jsonDataAccumulator);
+        }
+      }
+    }
+
+    updateNodeProgress(nodeInfo) {
+      // Find or create a progress indicator in the streaming message
+      const messageIndex = this.messages.length - 1;
+      if (this.messages[messageIndex] && this.messages[messageIndex].isStreaming) {
+        // Add node progress to the message
+        this.messages[messageIndex].nodeProgress = nodeInfo;
+        
+        // Show a temporary status indicator
+        const statusText = this.getNodeStatusText(nodeInfo);
+        this.showProcessingStatus(statusText);
+      }
+    }
+
+    getNodeStatusText(nodeInfo) {
+      const nodeDisplayNames = {
+        'respond': '💬 Generating response',
+        'validateClaims': '✅ Validating content',
+        'retrieveProducts': '🔍 Finding products',
+        'default': `⚙️ ${nodeInfo.node}`
+      };
+      
+      return nodeDisplayNames[nodeInfo.node] || nodeDisplayNames.default;
+    }
+
+    showProcessingStatus(status) {
+      // Create or update a temporary status indicator
+      let statusElement = this.shadowRoot.querySelector('.processing-status');
+      
+      if (!statusElement) {
+        statusElement = document.createElement('div');
+        statusElement.className = 'processing-status';
+        const chatLog = this.shadowRoot.querySelector('.chat-log');
+        if (chatLog) {
+          chatLog.appendChild(statusElement);
+        }
+      }
+      
+      statusElement.textContent = status;
+      statusElement.style.display = 'block';
+      
+      // Auto-hide after 2 seconds
+      setTimeout(() => {
+        if (statusElement) {
+          statusElement.style.display = 'none';
+        }
+      }, 2000);
+    }
+
+    handleSpecialResponse(responseData, messageIndex) {
+      // Handle special response types like orderTracking, productRecommendation, etc.
+      if (responseData.type === 'orderTracking') {
+        this.messages[messageIndex] = {
+          role: 'assistant',
+          type: 'orderTracking',
+          order: responseData.order,
+          options: responseData.options,
+          isStreaming: false
+        };
+        this.renderMessages();
+      } else if (responseData.type === 'productRecommendation') {
+        this.messages[messageIndex] = {
+          role: 'assistant',
+          type: 'productRecommendation',
+          products: responseData.products,
+          isStreaming: false
+        };
+        this.renderMessages();
+      } else if (responseData.type === 'normal') {
+        this.messages[messageIndex] = {
+          role: 'assistant',
+          type: 'normal',
+          content: responseData.reply || responseData.content,
+          options: responseData.options,
+          isStreaming: false
+        };
+        this.renderMessages();
+      }
     }
 
     loadScripts() {
@@ -1111,6 +1477,12 @@
       this.chatSession.expiresAt = null;
       this.chatSession.sessionToken = null;
       this.chatSession.transcript = null;
+      
+      // Clear assistantId and threadId
+      this.assistantId = null;
+      this.threadId = null;
+      this.langGraphUrl = null;
+      
       localStorage.removeItem('soof-chat-session');
 
       this.messages = [];
