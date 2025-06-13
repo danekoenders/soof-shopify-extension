@@ -535,6 +535,48 @@
               0%, 100% { background: ${styleGuide.primaryAccent}20; }
               50% { background: ${styleGuide.primaryAccent}30; }
           }
+
+          /* Product widget styles */
+          .product-widget {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            background: #fafbfc;
+            padding: 12px;
+          }
+          .product-widget-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+          }
+          .product-widget-details {
+            flex: 1;
+          }
+          .product-widget-variants {
+            margin-top: 8px;
+          }
+          .product-widget-variant {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+          }
+          .product-widget-variant button {
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid #007bff;
+            background: #007bff;
+            color: #fff;
+            cursor: pointer;
+          }
+          .product-widget-variant button[disabled] {
+            background: #ccc;
+            border-color: #ccc;
+            cursor: not-allowed;
+          }
       `;
     }
 
@@ -711,14 +753,16 @@
     }
 
     setCache() {
-      const now = new Date();
-      this.cache.data = this.serveData;
+      if (this.serveData && this.serveData.chatbot && this.serveData.shop) {
+        const now = new Date();
+        this.cache.data = this.serveData;
     
-      const item = {
-        data: this.cache.data,
-        expiresAt: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString(),
-      };
-      sessionStorage.setItem('soof-chat-cache', JSON.stringify(item));
+        const item = {
+          data: this.cache.data,
+          expiresAt: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString(),
+        };
+        sessionStorage.setItem('soof-chat-cache', JSON.stringify(item));
+      }
     }    
 
     async fetchServeData() {
@@ -867,18 +911,15 @@
                   </div>
               `;
           } else if (msg.type === 'normal') {
-            // Handle streaming messages with no content yet
             let messageContent = msg.content || '';
             if (msg.isStreaming && !messageContent) {
               messageContent = '<span class="typing-indicator">●●●</span>';
             }
-            
             let messageHtml = '';
             if (messageContent) {
               if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
                 messageHtml = marked.parse(DOMPurify.sanitize(messageContent));
               } else {
-                // Fallback: escape HTML entities and preserve line breaks
                 const escapeHtml = (unsafe) => unsafe
                   .replace(/&/g, "&amp;")
                   .replace(/</g, "&lt;")
@@ -888,9 +929,14 @@
                 messageHtml = `<p>${escapeHtml(messageContent).replace(/\n/g, '<br>')}</p>`;
               }
             }
+            let widgetHtml = '';
+            if (msg.widget) {
+              widgetHtml = this.renderWidget(msg.widget);
+            }
             return `
                   <div class="message-wrapper ${msg.role}">
                       <div class="message">${messageHtml}</div>
+                      ${widgetHtml}
                       ${
                         msg.options
                           ? `
@@ -1055,8 +1101,8 @@
         const graphInput = {
           messages: [
             {
-              role: 'user',
-              content: message
+              content: message,
+              type: 'human'
             }
           ]
         };
@@ -1069,8 +1115,8 @@
         const requestBody = {
           assistant_id: this.assistantId,
           input: graphInput,
-          stream_mode: ['events', 'messages', 'updates'],
-          // Add session context if needed
+          stream_mode: ['messages', 'updates'],
+          subgraphs: true,
           config: {
             configurable: {
               session_token: this.chatSession.sessionToken,
@@ -1151,7 +1197,7 @@
 
       const inputField = this.shadowRoot.querySelector('.chat-input input');
       if (inputField) {
-        inputField.focus();
+      inputField.focus();
       }
       chatLog.scrollTop = chatLog.scrollHeight;
     }
@@ -1237,6 +1283,26 @@
           if (eventType === 'updates') {
             console.log('Updates received:', parsedData);
             this.showProcessingStatus('Completed');
+            // Handle tool widgets
+            if (parsedData.tools && parsedData.tools.messages) {
+              parsedData.tools.messages.forEach(toolMsg => {
+                if (toolMsg.type === 'tool' && toolMsg.name === 'product_info' && toolMsg.content) {
+                  try {
+                    const widgetData = JSON.parse(toolMsg.content);
+                    if (this.messages[messageIndex]) {
+                      this.messages[messageIndex].widget = {
+                        type: 'product_info',
+                        data: widgetData.metadata
+                      };
+                      this.renderMessages();
+                    }
+                  } catch (e) {
+                    console.warn('Failed to parse product_info content:', e, toolMsg.content);
+                  }
+                }
+                // Add more tool types here as needed
+              });
+            }
           }
 
           // Handle node lifecycle events
@@ -1312,7 +1378,9 @@
       const nodeDisplayNames = {
         'respond': '💬 Generating response',
         'validateClaims': '✅ Validating content',
-        'retrieveProducts': '🔍 Finding products',
+        'retrieveProducts': '🔍 Searching products',
+        'product_info': '🔍 Searching product...',
+        // Add more nodes here
         'default': `⚙️ ${nodeInfo.node}`
       };
       
@@ -1616,6 +1684,34 @@
         },
       };
       this.sendMessage({ functionName: 'sendOrderTracking', functionObj });
+    }
+
+    renderWidget(widget) {
+      if (!widget) return '';
+      if (widget.type === 'product_info') {
+        const meta = widget.data;
+        return `
+          <div class="product-widget">
+            <img src="${meta.image_url}" alt="${meta.title}" class="product-widget-image" />
+            <div class="product-widget-details">
+              <h5>${meta.title}</h5>
+              <p>${meta.description}</p>
+              <div class="product-widget-variants">
+                ${meta.variants.map(variant => `
+                  <div class="product-widget-variant">
+                    <span>${variant.title}: <b>€${variant.price}</b></span>
+                    <button ${!variant.available ? 'disabled' : ''} data-variant-id="${variant.variant_id}">
+                      ${variant.available ? 'Add to Cart' : 'Out of Stock'}
+                    </button>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      // Add more widget types here
+      return '';
     }
   }
 
