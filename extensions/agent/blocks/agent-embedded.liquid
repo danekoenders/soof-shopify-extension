@@ -1,0 +1,180 @@
+<laintern-agent-embedded data-laintern-agent-type="embedded"></laintern-agent-embedded>
+
+<script type="module" defer>
+  // Mark that embedded version is present (prevents widget from rendering)
+  window.__lainternAgentEmbeddedPresent = true;
+
+  class AgentEmbedded extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this.bundleLoaded = false;
+      
+      // Configuration object for the chatbot - dynamic via Liquid
+      this.config = {
+        type: 'embedded',
+        agentName: {{ block.settings.agent_name | default: 'Soof' | json }},
+        language: `{{ localization.language.iso_code }}` || 'en',
+        primaryColor: {{ block.settings.primary_color | default: '#0040c0' | json }},
+        showWelcomeMessage: {{ block.settings.show_welcome_message | default: true | json }},
+        height: {{ block.settings.height | default: '600px' | json }},
+        width: {{ block.settings.width | default: '100%' | json }},
+        borderRadius: {{ block.settings.border_radius | default: '1em' | json }},
+        border: {{ block.settings.border | default: 'false' | json }},
+        boxShadow: {{ block.settings.box_shadow | default: 'true' | json }}
+      };
+      
+      // Ensure fonts used by the widget are available on the host page
+      this.ensureFonts();
+      this.renderBase();
+    }
+
+    ensureFonts() {
+      // Inject Google Fonts stylesheet once per page (safe for Shadow DOM)
+      if (!document.head.querySelector('link[data-laintern-agent-roboto]')) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap';
+        link.setAttribute('data-laintern-agent-roboto', '');
+        document.head.appendChild(link);
+      }
+    }
+
+    loadBundle() {
+      if (this.bundleLoaded) return Promise.resolve();
+      this.bundleLoaded = true;
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = `{{ 'lt-agent-extension.js' | asset_url }}`;
+        script.type = 'module';
+        script.defer = true;
+        script.onload = () => resolve();
+        script.onerror = (err) => reject(err);
+        document.head.appendChild(script);
+      });
+    }
+
+    renderBase() {
+      // Clear shadow DOM
+      this.shadowRoot.innerHTML = '';
+      
+      // Styles for embedded chat
+      const style = document.createElement('style');
+      style.textContent = `
+        .laintern-agent-embedded-container {
+          width: 100%;
+          height: ${this.config.height};
+          display: flex;
+          flex-direction: column;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+          background: #fff;
+        }
+        
+        #laintern-agent-react-root {
+          flex: 1;
+          width: 100%;
+          height: 100%;
+          overflow: auto;
+        }
+        
+        @media (max-width: 768px) {
+          .laintern-agent-embedded-container {
+            border-radius: 8px;
+          }
+        }
+      `;
+      this.shadowRoot.appendChild(style);
+
+      // Container for embedded chat
+      const container = document.createElement('div');
+      container.className = 'laintern-agent-embedded-container';
+      
+      // React mount point
+      const reactMount = document.createElement('div');
+      reactMount.id = 'laintern-agent-react-root';
+      container.appendChild(reactMount);
+      
+      this.shadowRoot.appendChild(container);
+    }
+
+    async connectedCallback() {
+      // Load bundle and mount React
+      await this.loadBundle();
+      
+      // Mount React app
+      if (window.__lainternAgentMount) {
+        window.__lainternAgentMount(this.shadowRoot, this.config);
+      }
+    }
+  }
+
+  if (!customElements.get('laintern-agent-embedded')) {
+    customElements.define('laintern-agent-embedded', AgentEmbedded);
+  }
+</script>
+
+{% schema %}
+  {
+    "name": "Laintern Agent (Embedded)",
+    "target": "section",
+    "settings": [
+      {
+        "type": "text",
+        "id": "agent_name",
+        "label": "Agent Name",
+        "default": "Soof",
+        "info": "The name of your virtual assistant"
+      },
+      {
+        "type": "color",
+        "id": "primary_color",
+        "label": "Primary Color",
+        "default": "#0040c0",
+        "info": "The main color for the chat widget"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_welcome_message",
+        "label": "Show Welcome Message",
+        "default": true,
+        "info": "Display welcome message when chat loads"
+      },
+      {
+        "type": "text",
+        "id": "height",
+        "label": "Chat Height",
+        "default": "600px",
+        "info": "Height of the embedded chat (e.g., 600px, 80vh)"
+      }, {
+        "type": "text",
+        "id": "width",
+        "label": "Chat Width",
+        "default": "100%",
+        "info": "Width of the embedded chat (e.g., 100%, 80vw, 600px)"
+      },
+      {
+        "type": "text",
+        "id": "border_radius",
+        "label": "Border Radius",
+        "default": "1em",
+        "info": "Border radius of the embedded chat (e.g., 1em, 8px, 10%)"
+      },
+      {
+        "type": "checkbox",
+        "id": "box_shadow",
+        "label": "Box Shadow",
+        "default": true,
+        "info": "Show box shadow on the embedded chat"
+      },
+      {
+        "type": "checkbox",
+        "id": "border",
+        "label": "Border",
+        "default": false,
+        "info": "Show border on the embedded chat"
+      }
+    ]
+  }
+{% endschema %}
