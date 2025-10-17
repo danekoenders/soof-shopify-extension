@@ -1,4 +1,27 @@
-# This file stores configurations for your Shopify app.
-# It must exist at the root of your app.
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-scopes = ""
+client_id = "09a3037639cfb3cc4b0d0ca8a7db4e8d"
+name = "Soof AI (Dev)"
+application_url = "https://soof-s--development.gadget.app/api/shopify/install-or-render"
+embedded = true
+handle = "soof"
+
+[webhooks]
+api_version = "2024-10"
+
+  [[webhooks.subscriptions]]
+  uri = "https://soof-s--development.gadget.app/api/webhooks/shopify"
+  compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact" ]
+
+[auth]
+redirect_urls = [
+  "https://soof-s--development.gadget.app/api/connections/auth/shopify/callback"
+]
+
+[app_proxy]
+url = "https://soof-s--development.gadget.app/api"
+subpath = "soof-proxy--dev"
+prefix = "apps"
+
+[pos]
+embedded = false

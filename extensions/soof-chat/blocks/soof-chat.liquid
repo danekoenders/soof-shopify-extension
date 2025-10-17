@@ -1,4 +1,4 @@
-<soof-chat local-language="{{ localization.language.iso_code }}"></soof-chat>
+<soof-chat></soof-chat>
 
 <script type="module" defer>
   class ChatBot extends HTMLElement {
@@ -12,6 +12,13 @@
     this.window = null;
     this.handleButtonClick = this.handleButtonClick.bind(this);
     this.handleCloseClick = this.handleCloseClick.bind(this);
+    
+    // Configuration object for the chatbot
+    this.config = {
+      agentName: 'Soof',
+      language: `{{ localization.language.iso_code }}` || 'en'
+    };
+    
     this.renderBase();
   }
 
@@ -47,7 +54,7 @@
 
       // Now that renderBase has placed <div id="soof-chat-react-root">
       if (window.__soofMount) {
-        window.__soofMount(this.shadowRoot);
+        window.__soofMount(this.shadowRoot, this.config);
       }
     }
   }
